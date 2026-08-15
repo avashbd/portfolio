@@ -1,0 +1,13 @@
+{
+  "name": "avash-portfolio-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vercel serverless backend for ArchViz by Avash portfolio (auth, projects, Google Drive integration).",
+  "dependencies": {
+    "google-auth-library": "^9.11.0",
+    "googleapis": "^140.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "cookie": "^0.6.0",
+    "@vercel/kv": "^2.0.0"
+  }
+}
