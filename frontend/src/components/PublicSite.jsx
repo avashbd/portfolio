@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe } from "lucide-react";
+import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "../lib/api.js";
 
 const FONT_ID = "avash-fonts";
@@ -32,6 +32,7 @@ const COPY = {
     loading: "Loading…",
     empty: "Projects coming soon.",
     projectsLabel: "PROJECTS",
+    featuredLabel: "FEATURED WORK",
   },
   bn: {
     hello: "হ্যালো! ⚡",
@@ -45,6 +46,7 @@ const COPY = {
     loading: "লোড হচ্ছে…",
     empty: "প্রজেক্ট শীঘ্রই আসছে।",
     projectsLabel: "প্রজেক্ট",
+    featuredLabel: "বাছাই করা কাজ",
   },
 };
 
@@ -58,6 +60,96 @@ function useBdClock() {
     return () => clearInterval(id);
   }, []);
   return time;
+}
+
+function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
+  const slides = projects.filter((p) => p.featured && p.images?.[0]);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % slides.length), 5000);
+    return () => clearInterval(id);
+  }, [slides.length]);
+
+  if (slides.length === 0) return null;
+
+  const current = slides[index];
+  const goPrev = () => setIndex((i) => (i - 1 + slides.length) % slides.length);
+  const goNext = () => setIndex((i) => (i + 1) % slides.length);
+
+  return (
+    <section className="max-w-6xl mx-auto px-6 md:px-16 pt-20">
+      <p className="text-xs tracking-[0.25em] mb-6 font-medium" style={{ color: purple }}>{label}</p>
+      <div className="relative rounded-2xl overflow-hidden" style={{ height: "60vh", minHeight: 320, background: dark ? "#1a1a1a" : "#eaeaea" }}>
+        {slides.map((p, i) => (
+          <div
+            key={p.id}
+            className="absolute inset-0 transition-opacity duration-700"
+            style={{
+              opacity: i === index ? 1 : 0,
+              backgroundImage: `url(${p.images[0]})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        ))}
+
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0) 70%)" }}
+        />
+
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+          <h3 style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2.2rem)", color: "#f4f4f0", textTransform: "uppercase" }}>
+            {current.title}
+          </h3>
+          <p className="text-xs md:text-sm mt-1" style={{ color: "rgba(244,244,240,0.75)" }}>
+            {current.tags?.join(", ")} {current.tags?.length ? "·" : ""} {current.year}
+          </p>
+        </div>
+
+        {slides.length > 1 && (
+          <>
+            <button
+              onClick={goPrev}
+              aria-label="Previous slide"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.4)", color: "#fff", border: "none" }}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={goNext}
+              aria-label="Next slide"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.4)", color: "#fff", border: "none" }}
+            >
+              <ChevronRight size={18} />
+            </button>
+
+            <div className="absolute bottom-3 right-4 flex gap-1.5">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  style={{
+                    width: i === index ? 18 : 6,
+                    height: 6,
+                    borderRadius: 3,
+                    background: i === index ? purple : "rgba(255,255,255,0.5)",
+                    border: "none",
+                    transition: "width 0.3s",
+                  }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export default function PublicSite() {
@@ -146,7 +238,7 @@ export default function PublicSite() {
 
           <div className="hidden md:flex flex-col gap-6 text-right absolute" style={{ right: "4rem", top: "15%" }}>
             {t.nav.map((l, i) => (
-              <a
+              
                 key={l}
                 href={i === 0 ? "#work" : i === 1 ? "#work" : "#contact"}
                 className="text-sm font-medium tracking-widest hover:opacity-70 transition"
@@ -164,7 +256,7 @@ export default function PublicSite() {
                 <br />
                 {t.imLabel} <span style={{ fontWeight: 700, color: text }}>{name.toUpperCase()}</span>
               </div>
-              <a
+              
                 href="#contact"
                 className="flex items-center justify-center rounded-full transition-transform hover:scale-105"
                 style={{ width: 120, height: 120, border: `2px dashed ${dark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)"}`, textDecoration: "none", color: text }}
@@ -266,6 +358,11 @@ export default function PublicSite() {
           </div>
         )}
       </div>
+
+      {/* ===== FEATURED SLIDESHOW ===== */}
+      {!loading && (
+        <FeaturedSlideshow projects={projects} dark={dark} dim={dim} text={text} purple={purple} label={t.featuredLabel} />
+      )}
 
       {/* ===== WORK ===== */}
       <section id="work" className="max-w-6xl mx-auto px-6 md:px-16 py-20">
