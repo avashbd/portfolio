@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     await saveDriveRefreshToken(tokens.refresh_token);
 
     const adminPanelUrl = process.env.FRONTEND_ORIGIN
-      ? `${process.env.FRONTEND_ORIGIN}/admin?drive=connected`
+      ? `${process.env.FRONTEND_ORIGIN}/portfolio/admin?drive=connected`
       : "/";
     res.writeHead(302, { Location: adminPanelUrl });
     res.end();
