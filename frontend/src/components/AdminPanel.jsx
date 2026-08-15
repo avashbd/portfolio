@@ -83,7 +83,9 @@ export default function AdminPanel() {
   }
 
   function toggleImage(file) {
-    const url = file.webContentLink || file.webViewLink;
+    const url = file.thumbnailLink
+      ? file.thumbnailLink.replace(/=s\d+$/, "=s1600")
+      : file.webContentLink || file.webViewLink;
     setSelectedImages((prev) => (prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url]));
   }
 
@@ -136,7 +138,9 @@ export default function AdminPanel() {
   }
 
   function pickProfilePhoto(file) {
-    const url = file.webContentLink || file.webViewLink;
+    const url = file.thumbnailLink
+      ? file.thumbnailLink.replace(/=s\d+$/, "=s1600")
+      : file.webContentLink || file.webViewLink;
     setSettingsForm({ ...settingsForm, profilePhoto: url });
     setPickingProfilePhoto(false);
   }
@@ -222,7 +226,7 @@ export default function AdminPanel() {
             {["facebook", "linkedin", "instagram", "github", "dribbble"].map((key) => (
               <input
                 key={key}
-                placeholder={`${key[0].toUpperCase()}${key.slice(1)} URL`}
+                placeholder={`${key[0].toUpperCase() + key.slice(1)} URL`}
                 value={settingsForm.socials?.[key] || ""}
                 onChange={(e) => setSettingsForm({ ...settingsForm, socials: { ...settingsForm.socials, [key]: e.target.value } })}
                 className="bg-transparent border rounded-lg px-3 py-2 text-sm"
@@ -260,7 +264,7 @@ export default function AdminPanel() {
             <p className="text-xs" style={{ color: "#5a5f6e" }}>Connect once so you can pick images/PDFs from your Drive.</p>
           </div>
           <div className="flex gap-2">
-            <a
+            
               href={api.connectDriveUrl()}
               className="text-xs px-3 py-1.5 rounded-full border hover:bg-white hover:text-black transition-colors"
               style={{ borderColor: "#2a2f3d" }}
@@ -286,7 +290,9 @@ export default function AdminPanel() {
             </p>
             <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
               {driveFiles.map((f) => {
-                const url = f.webContentLink || f.webViewLink;
+                const url = f.thumbnailLink
+                  ? f.thumbnailLink.replace(/=s\d+$/, "=s1600")
+                  : f.webContentLink || f.webViewLink;
                 const selected = pickingProfilePhoto ? settingsForm?.profilePhoto === url : selectedImages.includes(url);
                 return (
                   <button
