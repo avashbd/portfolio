@@ -7,7 +7,7 @@ import AdminPanel from "./components/AdminPanel.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/portfolio/">
       <Routes>
         <Route path="/" element={<PublicSite />} />
         {/* Hidden admin route - not linked anywhere in the public nav */}
