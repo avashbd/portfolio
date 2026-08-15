@@ -5,5 +5,5 @@ import react from "@vitejs/plugin-react";
 // If you're using a custom domain or a "username.github.io" root repo, set base to "/"
 export default defineConfig({
   plugins: [react()],
-  base: "/avash-portfolio/",
+  base: "/portfolio/",
 });
