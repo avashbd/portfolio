@@ -238,7 +238,7 @@ export default function PublicSite() {
 
           <div className="hidden md:flex flex-col gap-6 text-right absolute" style={{ right: "4rem", top: "15%" }}>
             {t.nav.map((l, i) => (
-              
+              <a
                 key={l}
                 href={i === 0 ? "#work" : i === 1 ? "#work" : "#contact"}
                 className="text-sm font-medium tracking-widest hover:opacity-70 transition"
@@ -256,7 +256,7 @@ export default function PublicSite() {
                 <br />
                 {t.imLabel} <span style={{ fontWeight: 700, color: text }}>{name.toUpperCase()}</span>
               </div>
-              
+              <a
                 href="#contact"
                 className="flex items-center justify-center rounded-full transition-transform hover:scale-105"
                 style={{ width: 120, height: 120, border: `2px dashed ${dark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)"}`, textDecoration: "none", color: text }}
