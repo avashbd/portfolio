@@ -68,10 +68,6 @@ function getThumb(url) {
     const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
-  // If it's a video link, return a fallback so it doesn't break the CSS
-  if (url.includes('drive.google.com/file') || url.match(/\.(mp4|webm|ogg)$/i)) {
-    return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop"; // Placeholder for video
-  }
   return url;
 }
 
@@ -92,9 +88,6 @@ function MediaViewer({ url }) {
   if (url.includes('drive.google.com') && url.includes('/view')) {
     const embedUrl = url.replace('/view', '/preview').replace('?usp=sharing', '');
     return <iframe className="w-full aspect-video" src={embedUrl} allowFullScreen></iframe>;
-  }
-  if (url.includes('drive.google.com/uc')) {
-    return <video className="w-full aspect-video" controls src={url}></video>;
   }
   
   return <img src={url} className="w-full h-auto object-contain" alt="Project media" />;
@@ -324,10 +317,8 @@ export default function PublicSite() {
         </div>
       )}
 
-      {/* ===== HERO (ID="ABOUT") ===== */}
+      {/* ===== HERO (ID="ABOUT" ADDED HERE) ===== */}
       <div id="about" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-        
-        {/* REVERTED TO BEAUTIFUL GRADIENT BACKGROUND */}
         <div
           className="avash-reveal"
           style={{
@@ -363,6 +354,7 @@ export default function PublicSite() {
           </header>
 
           <div className="hidden md:flex flex-col gap-6 text-right absolute avash-reveal avash-delay-100" style={{ right: "4rem", top: "15%" }}>
+            {/* Nav Href Fixed: i === 0 is now '#about' */}
             {t.nav.map((l, i) => (
               <a key={l} href={i === 0 ? "#about" : i === 1 ? "#work" : "#contact"} className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition hover:scale-110 origin-right" style={{ color: dim, textDecoration: "none" }}>
                 {l}
