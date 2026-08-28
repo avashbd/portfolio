@@ -282,9 +282,19 @@ export default function PublicSite() {
                 STRUCTURE
               </h1>
 
-              <div className="relative flex items-end justify-center" style={{ height: "38vh", zIndex: 15, margin: "0.5rem 0" }}>
+              <div className="relative flex items-center justify-center" style={{ height: "38vh", zIndex: 15, margin: "0.5rem 0" }}>
                 {photo ? (
-                  <img src={photo} alt={name} style={{ height: "100%", objectFit: "contain", filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.5))" }} />
+                  <img 
+                    src={photo} 
+                    alt={name} 
+                    style={{ 
+                      width: "min(65vw, 280px)", 
+                      height: "min(65vw, 280px)", 
+                      borderRadius: "50%", 
+                      objectFit: "cover", 
+                      boxShadow: "0 20px 30px rgba(0,0,0,0.5)" 
+                    }} 
+                  />
                 ) : (
                   <div
                     style={{
