@@ -200,7 +200,8 @@ export default function PublicSite() {
             transform: "translateX(-50%)",
             width: "32%",
             height: "100%",
-            background: purple,
+            background: `linear-gradient(180deg, ${purple} 0%, transparent 100%)`,
+            opacity: dark ? 0.9 : 0.7,
             zIndex: 0,
           }}
         />
@@ -258,41 +259,44 @@ export default function PublicSite() {
               </div>
               <a
                 href="#contact"
-                className="flex items-center justify-center rounded-full transition-transform hover:scale-105"
-                style={{ width: 120, height: 120, border: `2px dashed ${dark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.25)"}`, textDecoration: "none", color: text }}
+                className="flex items-center justify-center rounded-full transition-all duration-500 hover:scale-105 hover:bg-white hover:text-black group"
+                style={{ width: 110, height: 110, border: `1px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}`, textDecoration: "none", color: text, backdropFilter: "blur(8px)" }}
               >
-                <span style={{ fontSize: "1.75rem", fontWeight: 300 }}>↗</span>
+                <ArrowUpRight size={36} strokeWidth={1} className="group-hover:rotate-45 transition-transform duration-500" />
               </a>
             </div>
 
-            <div className="absolute left-1/2 top-1/2 text-center w-full flex flex-col items-center justify-center" style={{ transform: "translate(-50%, -50%)" }}>
+            <div className="absolute left-1/2 top-1/2 text-center w-full flex flex-col items-center justify-center pointer-events-none" style={{ transform: "translate(-50%, -50%)" }}>
               <h1
                 style={{
                   fontFamily: "'Anton', sans-serif",
-                  fontSize: "clamp(2.8rem, 9vw, 9rem)",
-                  lineHeight: 0.85,
+                  fontSize: "clamp(3.5rem, 11vw, 11rem)",
+                  lineHeight: 0.8,
                   textTransform: "uppercase",
-                  letterSpacing: 2,
-                  color: dark ? "#f5f5dc" : "#1a1a1a",
+                  letterSpacing: 4,
+                  color: "transparent",
+                  WebkitTextStroke: `2px ${dark ? "#f5f5dc" : "#1a1a1a"}`,
                   whiteSpace: "nowrap",
-                  zIndex: 5,
+                  zIndex: 20,
                   marginLeft: "-3%",
                 }}
               >
                 STRUCTURE
               </h1>
 
-              <div className="relative flex items-center justify-center" style={{ height: "38vh", zIndex: 15, margin: "0.5rem 0" }}>
+              <div className="relative flex items-center justify-center pointer-events-auto" style={{ height: "42vh", zIndex: 15, margin: "1rem 0" }}>
                 {photo ? (
                   <img 
                     src={photo} 
                     alt={name} 
+                    className="transition-transform duration-700 hover:scale-105"
                     style={{ 
-                      width: "min(65vw, 280px)", 
-                      height: "min(65vw, 280px)", 
-                      borderRadius: "50%", 
+                      width: "min(65vw, 300px)", 
+                      height: "min(85vw, 400px)", 
+                      borderRadius: "150px 150px 16px 16px", 
                       objectFit: "cover", 
-                      boxShadow: "0 20px 30px rgba(0,0,0,0.5)" 
+                      boxShadow: dark ? "0 30px 60px -15px rgba(107, 33, 168, 0.6)" : "0 30px 60px -15px rgba(0,0,0,0.2)",
+                      border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.05)"}`
                     }} 
                   />
                 ) : (
@@ -322,8 +326,8 @@ export default function PublicSite() {
               <h1
                 style={{
                   fontFamily: "'Anton', sans-serif",
-                  fontSize: "clamp(2.8rem, 9vw, 9rem)",
-                  lineHeight: 0.85,
+                  fontSize: "clamp(3.5rem, 11vw, 11rem)",
+                  lineHeight: 0.8,
                   textTransform: "uppercase",
                   letterSpacing: 2,
                   color: dark ? "#f5f5dc" : "#1a1a1a",
@@ -337,19 +341,19 @@ export default function PublicSite() {
             </div>
 
             <div className="hidden md:flex flex-1 flex-col items-end text-right z-10" style={{ gap: "3rem", height: "100%", justifyContent: "flex-end", paddingBottom: "2rem" }}>
-              <p style={{ maxWidth: 280, fontSize: "0.85rem", lineHeight: 1.6, color: dim, fontWeight: 300 }}>{tagline.toUpperCase()}</p>
+              <p style={{ maxWidth: 280, fontSize: "0.85rem", lineHeight: 1.7, color: dim, fontWeight: 300 }}>{tagline.toUpperCase()}</p>
               <div className="flex flex-col gap-2.5">
                 {stats.projectsCount && (
-                  <div className="flex items-baseline justify-end gap-2.5" style={{ fontSize: "1.8rem", fontWeight: 700, fontFamily: "'Anton', sans-serif" }}>
-                    {stats.projectsCount} <span style={{ color: purple, fontSize: "1rem" }}>{t.projectsLabel}</span>
+                  <div className="flex items-baseline justify-end gap-2.5" style={{ fontSize: "2rem", fontWeight: 700, fontFamily: "'Anton', sans-serif" }}>
+                    {stats.projectsCount} <span style={{ color: purple, fontSize: "1rem", letterSpacing: 1 }}>{t.projectsLabel}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-end gap-3 pt-1">
-                  {socials.facebook && <a href={socials.facebook} target="_blank" rel="noreferrer"><Facebook size={14} style={{ color: dim }} /></a>}
-                  {socials.linkedin && <a href={socials.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} style={{ color: dim }} /></a>}
-                  {socials.instagram && <a href={socials.instagram} target="_blank" rel="noreferrer"><Instagram size={14} style={{ color: dim }} /></a>}
-                  {socials.github && <a href={socials.github} target="_blank" rel="noreferrer"><Github size={14} style={{ color: dim }} /></a>}
-                  {socials.dribbble && <a href={socials.dribbble} target="_blank" rel="noreferrer"><Dribbble size={14} style={{ color: dim }} /></a>}
+                  {socials.facebook && <a href={socials.facebook} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Facebook size={16} style={{ color: dim }} /></a>}
+                  {socials.linkedin && <a href={socials.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Linkedin size={16} style={{ color: dim }} /></a>}
+                  {socials.instagram && <a href={socials.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Instagram size={16} style={{ color: dim }} /></a>}
+                  {socials.github && <a href={socials.github} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Github size={16} style={{ color: dim }} /></a>}
+                  {socials.dribbble && <a href={socials.dribbble} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Dribbble size={16} style={{ color: dim }} /></a>}
                 </div>
               </div>
             </div>
@@ -358,8 +362,8 @@ export default function PublicSite() {
 
         {marquee && (
           <div
-            className="absolute bottom-0 left-0 w-full flex overflow-hidden"
-            style={{ background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", borderTop: `1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, padding: "14px 0", zIndex: 20 }}
+            className="absolute bottom-0 left-0 w-full flex overflow-hidden backdrop-blur-md"
+            style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderTop: `1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, padding: "14px 0", zIndex: 20 }}
           >
             <div style={{ fontFamily: "'Anton', sans-serif", fontSize: "1.25rem", color: dim, whiteSpace: "nowrap", animation: "avash-marquee 22s linear infinite" }}>
               {(marquee + " * ").repeat(2)}
@@ -383,11 +387,11 @@ export default function PublicSite() {
             <button
               key={s.id}
               onClick={() => setActiveSegment(i)}
-              className="px-4 py-2 rounded-full text-sm border transition-colors"
+              className="px-4 py-2 rounded-full text-sm border transition-all duration-300"
               style={{
                 borderColor: activeSegment === i ? purple : dark ? "#2a2a2a" : "#dcdcdc",
-                background: activeSegment === i ? `${purple}22` : "transparent",
-                color: activeSegment === i ? text : dim,
+                background: activeSegment === i ? purple : "transparent",
+                color: activeSegment === i ? "#fff" : dim,
               }}
             >
               {s.label[lang]}
@@ -406,9 +410,9 @@ export default function PublicSite() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {segProjects.map((p) => (
-              <div key={p.id} className="group rounded-xl border p-5 transition-colors" style={{ borderColor: dark ? "#232323" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
+              <div key={p.id} className="group rounded-xl border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg" style={{ borderColor: dark ? "#232323" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)" }}>
                 <div
-                  className="rounded-lg h-32 mb-4 flex items-center justify-center text-xs"
+                  className="rounded-lg h-32 mb-4 flex items-center justify-center text-xs overflow-hidden"
                   style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#1a1a1a" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
@@ -416,7 +420,7 @@ export default function PublicSite() {
                 <div className="flex items-start justify-between gap-2">
                   <h4 className="text-sm" style={{ fontWeight: 500 }}>{p.title}</h4>
                   {p.pdfUrl && (
-                    <a href={p.pdfUrl} target="_blank" rel="noreferrer">
+                    <a href={p.pdfUrl} target="_blank" rel="noreferrer" className="hover:scale-110 transition-transform">
                       <ArrowUpRight size={14} className="mt-0.5 shrink-0" style={{ color: purple }} />
                     </a>
                   )}
@@ -434,8 +438,8 @@ export default function PublicSite() {
         <h3 className="mb-4" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2rem", textTransform: "uppercase" }}>{t.haveProject}</h3>
         <p className="text-sm max-w-md mb-8" style={{ color: dim }}>{t.contactBody}</p>
         <div className="flex flex-col gap-2">
-          <a href={`mailto:${settings?.email}`} className="text-sm underline" style={{ color: text }}>{settings?.email}</a>
-          {settings?.phone && <a href={`tel:${settings.phone}`} className="text-sm underline" style={{ color: text }}>{settings.phone}</a>}
+          <a href={`mailto:${settings?.email}`} className="text-sm underline hover:opacity-70 transition-opacity" style={{ color: text }}>{settings?.email}</a>
+          {settings?.phone && <a href={`tel:${settings.phone}`} className="text-sm underline hover:opacity-70 transition-opacity" style={{ color: text }}>{settings.phone}</a>}
         </div>
         <div className="mt-16 pt-6 border-t text-xs" style={{ borderColor: dark ? "#232323" : "#e2e2e2", color: dim }}>
           © {new Date().getFullYear()} ArchViz by {name}
