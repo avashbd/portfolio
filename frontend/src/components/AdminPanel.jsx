@@ -264,7 +264,7 @@ export default function AdminPanel() {
             <p className="text-xs" style={{ color: "#5a5f6e" }}>Connect once so you can pick images/PDFs from your Drive.</p>
           </div>
           <div className="flex gap-2">
-            
+            <a
               href={api.connectDriveUrl()}
               className="text-xs px-3 py-1.5 rounded-full border hover:bg-white hover:text-black transition-colors"
               style={{ borderColor: "#2a2f3d" }}
