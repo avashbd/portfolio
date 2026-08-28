@@ -62,6 +62,37 @@ function useBdClock() {
   return time;
 }
 
+function getThumb(url) {
+  if (!url) return "";
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  }
+  return url;
+}
+
+function MediaViewer({ url }) {
+  if (!url) return null;
+  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
+    return <iframe className="w-full aspect-video rounded-xl" src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} allow="autoplay; encrypted-media" allowFullScreen></iframe>;
+  }
+  if (url.includes('vimeo.com')) {
+    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+    return <iframe className="w-full aspect-video rounded-xl" src={`https://player.vimeo.com/video/${videoId}?autoplay=1`} allow="autoplay; fullscreen" allowFullScreen></iframe>;
+  }
+  if (url.includes('drive.google.com/uc') || url.match(/\.(mp4|webm|ogg)$/i)) {
+    return <video className="w-full aspect-video rounded-xl" controls autoPlay src={url}></video>;
+  }
+  if (url.includes('drive.google.com') && url.includes('/view')) {
+    const embedUrl = url.replace('/view', '/preview').replace('?usp=sharing', '');
+    return <iframe className="w-full aspect-video rounded-xl" src={embedUrl} allowFullScreen></iframe>;
+  }
+  
+  return <img src={url} className="w-full h-auto object-contain rounded-xl" alt="Project media" />;
+}
+
 function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
   const slides = projects.filter((p) => p.featured && p.images?.[0]);
   const [index, setIndex] = useState(0);
@@ -88,7 +119,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
             className="absolute inset-0 transition-opacity duration-700"
             style={{
               opacity: i === index ? 1 : 0,
-              backgroundImage: `url('${p.images[0]}')`,
+              backgroundImage: `url('${getThumb(p.images[0])}')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -272,7 +303,7 @@ export default function PublicSite() {
             <div className="flex flex-col gap-8">
               {selectedProject.images?.map((url, idx) => (
                 <div key={idx} className="w-full rounded-xl overflow-hidden border shadow-lg" style={{ borderColor: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", background: dark ? "#0a0c12" : "#f3f4f6" }}>
-                  <img src={url} className="w-full h-auto object-contain" alt="Project detail" />
+                  <MediaViewer url={url} />
                 </div>
               ))}
             </div>
@@ -289,7 +320,7 @@ export default function PublicSite() {
       {/* ===== HERO (ID="ABOUT") ===== */}
       <div id="about" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
         
-        {/* Soft atmospheric gradient glow behind the center */}
+        {/* Background Gradient */}
         <div
           className="avash-reveal"
           style={{
@@ -306,6 +337,7 @@ export default function PublicSite() {
         />
 
         <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-16 py-8 flex flex-col" style={{ minHeight: "100vh" }}>
+          
           <header className="flex justify-between items-start mb-8 avash-reveal">
             <div className="flex items-center gap-2.5 text-lg font-bold tracking-wider">
               <div style={{ width: 24, height: 24, background: purple, clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)" }} />
@@ -332,8 +364,11 @@ export default function PublicSite() {
             ))}
           </div>
 
-          <main className="flex-1 relative flex items-center justify-between py-16">
-            <div className="flex-1 flex flex-col z-10 avash-reveal avash-delay-100" style={{ gap: "4rem" }}>
+          {/* MOBILE RESPONSIVE FIX: flex-col on mobile, stacked properly */}
+          <main className="flex-1 relative flex flex-col md:flex-row items-center justify-center md:justify-between py-10 md:py-16">
+            
+            {/* 1. HELLO section (Top on mobile, Left on desktop) */}
+            <div className="flex flex-col z-20 avash-reveal avash-delay-100 items-center md:items-start text-center md:text-left w-full md:w-auto md:flex-1 mb-10 md:mb-0" style={{ gap: "1.5rem" }}>
               <div className="text-sm md:text-base font-medium tracking-widest leading-relaxed" style={{ color: dim }}>
                 {t.hello}
                 <br />
@@ -341,20 +376,21 @@ export default function PublicSite() {
               </div>
               <a
                 href="#contact"
-                className="flex items-center justify-center rounded-full transition-all duration-500 hover:scale-110 group shadow-lg"
-                style={{ width: 110, height: 110, border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, textDecoration: "none", color: text, background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", backdropFilter: "blur(10px)" }}
+                className="flex items-center justify-center rounded-full transition-all duration-500 hover:scale-110 group shadow-lg w-[70px] h-[70px] md:w-[110px] md:h-[110px]"
+                style={{ border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, textDecoration: "none", color: text, background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", backdropFilter: "blur(10px)" }}
               >
-                <ArrowUpRight size={32} strokeWidth={1.5} className="group-hover:rotate-45 transition-transform duration-500" style={{ color: purple }} />
+                <ArrowUpRight strokeWidth={1.5} className="w-8 h-8 md:w-10 md:h-10 group-hover:rotate-45 transition-transform duration-500" style={{ color: purple }} />
               </a>
             </div>
 
-            <div className="absolute left-1/2 top-1/2 text-center w-full flex flex-col items-center justify-center pointer-events-none" style={{ transform: "translate(-50%, -50%)" }}>
+            {/* 2. CENTER IMAGE section (Relative on mobile, Absolute on desktop) */}
+            <div className="relative md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 text-center w-full flex flex-col items-center justify-center pointer-events-none z-10 my-4 md:my-0">
               <h1
                 className="avash-reveal"
                 style={{
-                  transform: `translateY(${scrollY * 0.45}px)`,
+                  transform: `translateY(${scrollY * 0.25}px)`,
                   fontFamily: "'Anton', sans-serif",
-                  fontSize: "clamp(3.5rem, 11vw, 11rem)",
+                  fontSize: "clamp(3rem, 11vw, 11rem)",
                   lineHeight: 0.8,
                   textTransform: "uppercase",
                   letterSpacing: 4,
@@ -362,21 +398,21 @@ export default function PublicSite() {
                   WebkitTextStroke: `1.5px ${dark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)"}`,
                   whiteSpace: "nowrap",
                   zIndex: 20,
-                  marginLeft: "-3%",
+                  marginLeft: "-2%",
                 }}
               >
                 STRUCTURE
               </h1>
 
-              <div className="relative flex items-center justify-center pointer-events-auto avash-reveal avash-delay-100" style={{ height: "42vh", zIndex: 15, margin: "1rem 0", transform: `translateY(${scrollY * 0.15}px)` }}>
+              <div className="relative flex items-center justify-center pointer-events-auto avash-reveal avash-delay-100" style={{ height: "min(45vh, 400px)", zIndex: 15, margin: "1rem 0", transform: `translateY(${scrollY * 0.05}px)` }}>
                 {photo ? (
                   <img 
                     src={photo} 
                     alt={name} 
                     className="transition-transform duration-700 hover:scale-[1.02]"
                     style={{ 
-                      width: "min(65vw, 290px)", 
-                      height: "min(85vw, 390px)", 
+                      width: "min(70vw, 290px)", 
+                      height: "100%", 
                       borderRadius: "140px 140px 20px 20px", 
                       objectFit: "cover", 
                       boxShadow: "0 25px 50px -12px rgba(139, 92, 246, 0.25)",
@@ -384,23 +420,23 @@ export default function PublicSite() {
                     }} 
                   />
                 ) : (
-                  <div style={{ height: "100%", width: 180, borderRadius: "90px 90px 0 0", background: `linear-gradient(180deg, ${purple}44, ${purple}00)`, border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: dim, textAlign: "center" }}>YOUR PHOTO<br/>(PNG)</div>
+                  <div style={{ height: "100%", width: "min(70vw, 180px)", borderRadius: "90px 90px 0 0", background: `linear-gradient(180deg, ${purple}44, ${purple}00)`, border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: dim, textAlign: "center" }}>YOUR PHOTO<br/>(PNG)</div>
                 )}
               </div>
 
               <h1
                 className="avash-reveal avash-delay-200"
                 style={{
-                  transform: `translateY(${scrollY * -0.15}px)`,
+                  transform: `translateY(${scrollY * -0.1}px)`,
                   fontFamily: "'Anton', sans-serif",
-                  fontSize: "clamp(3.5rem, 11vw, 11rem)",
+                  fontSize: "clamp(3rem, 11vw, 11rem)",
                   lineHeight: 0.8,
                   textTransform: "uppercase",
                   letterSpacing: 2,
                   color: text,
                   whiteSpace: "nowrap",
                   zIndex: 20,
-                  marginRight: "-3%",
+                  marginRight: "-2%",
                   textShadow: dark ? "0 10px 30px rgba(139, 92, 246, 0.3)" : "none",
                 }}
               >
@@ -408,23 +444,26 @@ export default function PublicSite() {
               </h1>
             </div>
 
-            <div className="hidden md:flex flex-1 flex-col items-end text-right z-10 avash-reveal avash-delay-200" style={{ gap: "3rem", height: "100%", justifyContent: "flex-end", paddingBottom: "2rem" }}>
-              <p style={{ maxWidth: 280, fontSize: "0.85rem", lineHeight: 1.7, color: dim, fontWeight: 300 }}>{tagline.toUpperCase()}</p>
-              <div className="flex flex-col gap-2.5">
+            {/* 3. RIGHT section - Socials (Bottom on mobile, Right on desktop) */}
+            <div className="flex flex-col items-center md:items-end text-center md:text-right z-10 avash-reveal avash-delay-200 mt-12 md:mt-0 w-full md:w-auto md:flex-1" style={{ gap: "2rem", height: "100%", justifyContent: "flex-end", paddingBottom: "2rem" }}>
+              <p className="hidden md:block" style={{ maxWidth: 280, fontSize: "0.85rem", lineHeight: 1.7, color: dim, fontWeight: 300 }}>{tagline.toUpperCase()}</p>
+              
+              <div className="flex flex-col gap-3 md:gap-2.5 items-center md:items-end">
                 {stats.projectsCount && (
-                  <div className="flex items-baseline justify-end gap-2.5" style={{ fontSize: "2rem", fontWeight: 700, fontFamily: "'Anton', sans-serif" }}>
+                  <div className="flex items-baseline justify-center md:justify-end gap-2.5" style={{ fontSize: "2rem", fontWeight: 700, fontFamily: "'Anton', sans-serif" }}>
                     {stats.projectsCount} <span style={{ color: purple, fontSize: "1rem", letterSpacing: 1 }}>{t.projectsLabel}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-end gap-3.5 pt-1">
-                  {socials.facebook && <a href={socials.facebook} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Facebook size={14} style={{ color: dim }} /></a>}
-                  {socials.linkedin && <a href={socials.linkedin} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Linkedin size={14} style={{ color: dim }} /></a>}
-                  {socials.instagram && <a href={socials.instagram} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Instagram size={14} style={{ color: dim }} /></a>}
-                  {socials.github && <a href={socials.github} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Github size={14} style={{ color: dim }} /></a>}
-                  {socials.dribbble && <a href={socials.dribbble} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Dribbble size={14} style={{ color: dim }} /></a>}
+                <div className="flex items-center justify-center md:justify-end gap-4 md:gap-3.5 pt-1">
+                  {socials.facebook && <a href={socials.facebook} className="p-2 md:p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Facebook size={16} style={{ color: dim }} /></a>}
+                  {socials.linkedin && <a href={socials.linkedin} className="p-2 md:p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Linkedin size={16} style={{ color: dim }} /></a>}
+                  {socials.instagram && <a href={socials.instagram} className="p-2 md:p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Instagram size={16} style={{ color: dim }} /></a>}
+                  {socials.github && <a href={socials.github} className="p-2 md:p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Github size={16} style={{ color: dim }} /></a>}
+                  {socials.dribbble && <a href={socials.dribbble} className="p-2 md:p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Dribbble size={16} style={{ color: dim }} /></a>}
                 </div>
               </div>
             </div>
+
           </main>
         </div>
 
@@ -483,7 +522,7 @@ export default function PublicSite() {
               >
                 <div
                   className="relative rounded-xl h-48 mb-5 flex items-center justify-center text-xs overflow-hidden border border-white/5"
-                  style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
+                  style={{ background: p.images?.[0] ? `url('${getThumb(p.images[0])}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
                   {p.images?.length > 1 && (
