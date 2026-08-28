@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { api } from "../lib/api.js";
 
@@ -62,7 +62,6 @@ function useBdClock() {
   return time;
 }
 
-// হেল্পার ফাংশন: ইউটিউব লিংক থেকে থাম্বনেইল বের করার জন্য
 function getThumb(url) {
   if (!url) return "";
   if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -72,7 +71,6 @@ function getThumb(url) {
   return url;
 }
 
-// হেল্পার কম্পোনেন্ট: ভিডিও এবং ছবি রেন্ডার করার জন্য
 function MediaViewer({ url }) {
   if (!url) return null;
   
@@ -112,7 +110,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
   const goNext = () => setIndex((i) => (i + 1) % slides.length);
 
   return (
-    <section className="max-w-6xl mx-auto px-6 md:px-16 pt-20">
+    <section className="max-w-6xl mx-auto px-6 md:px-16 pt-20 avash-reveal avash-delay-300">
       <p className="text-xs tracking-[0.25em] mb-6 font-medium" style={{ color: purple }}>{label}</p>
       <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl" style={{ height: "60vh", minHeight: 320, background: dark ? "#14161f" : "#eaeaea" }}>
         {slides.map((p, i) => (
@@ -144,20 +142,10 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
 
         {slides.length > 1 && (
           <>
-            <button
-              onClick={goPrev}
-              aria-label="Previous slide"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md"
-              style={{ background: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)", color: text, border: "1px solid rgba(255,255,255,0.1)" }}
-            >
+            <button onClick={goPrev} aria-label="Previous slide" className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md hover:scale-110 transition-transform" style={{ background: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)", color: text, border: "1px solid rgba(255,255,255,0.1)" }}>
               <ChevronLeft size={18} />
             </button>
-            <button
-              onClick={goNext}
-              aria-label="Next slide"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md"
-              style={{ background: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)", color: text, border: "1px solid rgba(255,255,255,0.1)" }}
-            >
+            <button onClick={goNext} aria-label="Next slide" className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md hover:scale-110 transition-transform" style={{ background: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)", color: text, border: "1px solid rgba(255,255,255,0.1)" }}>
               <ChevronRight size={18} />
             </button>
 
@@ -166,15 +154,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
                 <button
                   key={i}
                   onClick={() => setIndex(i)}
-                  aria-label={`Go to slide ${i + 1}`}
-                  style={{
-                    width: i === index ? 18 : 6,
-                    height: 6,
-                    borderRadius: 3,
-                    background: i === index ? purple : "rgba(150,150,150,0.4)",
-                    border: "none",
-                    transition: "width 0.3s",
-                  }}
+                  style={{ width: i === index ? 18 : 6, height: 6, borderRadius: 3, background: i === index ? purple : "rgba(150,150,150,0.4)", border: "none", transition: "width 0.3s" }}
                 />
               ))}
             </div>
@@ -195,28 +175,49 @@ export default function PublicSite() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // মডাল স্টেট
+  // New States for Advanced Features
   const [selectedProject, setSelectedProject] = useState(null);
+  const [scrollY, setScrollY] = useState(0);
+  const [isHoveringProject, setIsHoveringProject] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   
+  // Custom Cursor Ref
+  const cursorRef = useRef(null);
+
   const t = COPY[lang];
   const bdTime = useBdClock();
 
   useEffect(() => {
+    setIsMounted(true);
+    
+    // Parallax Scroll Listener
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Custom Cursor Pointer Listener
+    const handleMouseMove = (e) => {
+      if (cursorRef.current) {
+        // Move the cursor smoothly without React state re-renders
+        cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+
     Promise.all([
       api.getSettings().catch(() => ({ settings: {} })), 
       api.listProjects().catch(() => ({ projects: [] }))
-    ])
-      .then(([s, p]) => {
+    ]).then(([s, p]) => {
         setSettings(s.settings || {});
         setProjects(p.projects || []);
-        if (s.settings?.defaultTheme) {
-          setDark(s.settings.defaultTheme === "dark");
-        }
-      })
-      .finally(() => setLoading(false));
+        if (s.settings?.defaultTheme) setDark(s.settings.defaultTheme === "dark");
+    }).finally(() => setLoading(false));
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
 
-  // মডাল ওপেন থাকলে পেজ স্ক্রল বন্ধ রাখা
   useEffect(() => {
     if (selectedProject) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'unset';
@@ -239,13 +240,49 @@ export default function PublicSite() {
   const marquee = settings?.marqueeText || "";
 
   return (
-    <div style={{ background: bg, color: text, fontFamily: "'Inter', sans-serif", minHeight: "100vh" }}>
+    <div className={isMounted ? "opacity-100" : "opacity-0"} style={{ background: bg, color: text, fontFamily: "'Inter', sans-serif", minHeight: "100vh", transition: "opacity 0.8s ease" }}>
       
+      {/* Global Styles for Reveal Animations & Hiding Default Cursor */}
+      <style>{`
+        @media (pointer: fine) {
+          body { cursor: none; }
+          a, button, select, input, textarea { cursor: none !important; }
+        }
+        @keyframes fadeUpReveal {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .avash-reveal {
+          animation: fadeUpReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+        .avash-delay-100 { animation-delay: 100ms; }
+        .avash-delay-200 { animation-delay: 200ms; }
+        .avash-delay-300 { animation-delay: 300ms; }
+        .avash-delay-400 { animation-delay: 400ms; }
+      `}</style>
+
+      {/* ===== CUSTOM ANIMATED CURSOR ===== */}
+      <div 
+        ref={cursorRef}
+        className="fixed top-0 left-0 pointer-events-none z-[100] hidden md:flex items-center justify-center rounded-full transition-[width,height,background-color,border-color] duration-300 ease-out mix-blend-difference"
+        style={{
+          width: isHoveringProject ? 70 : 32,
+          height: isHoveringProject ? 70 : 32,
+          marginLeft: isHoveringProject ? -35 : -16,
+          marginTop: isHoveringProject ? -35 : -16,
+          border: isHoveringProject ? "none" : "2px solid #fff",
+          background: isHoveringProject ? "#fff" : "transparent",
+        }}
+      >
+        {isHoveringProject && <span className="text-black text-[11px] font-bold tracking-widest">VIEW</span>}
+      </div>
+
       {/* ===== PROJECT MODAL POPUP ===== */}
       {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" style={{ background: dark ? "rgba(0,0,0,0.85)" : "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)" }}>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-6" style={{ background: dark ? "rgba(0,0,0,0.85)" : "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)" }}>
           <div 
-            className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 md:p-10 shadow-2xl" 
+            className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 md:p-10 shadow-2xl avash-reveal" 
             style={{ background: dark ? "#11141d" : "#ffffff", border: `1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}` }}
           >
             <button 
@@ -289,6 +326,7 @@ export default function PublicSite() {
       {/* ===== HERO ===== */}
       <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
         <div
+          className="avash-reveal"
           style={{
             position: "absolute",
             top: "50%",
@@ -303,52 +341,34 @@ export default function PublicSite() {
         />
 
         <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-16 py-8 flex flex-col" style={{ minHeight: "100vh" }}>
-          <header className="flex justify-between items-start mb-8">
+          <header className="flex justify-between items-start mb-8 avash-reveal">
             <div className="flex items-center gap-2.5 text-lg font-bold tracking-wider">
               <div style={{ width: 24, height: 24, background: purple, clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)" }} />
               {name.toUpperCase()}
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setLang(lang === "en" ? "bn" : "en")}
-                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full border transition hover:opacity-80"
-                style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)" }}
-              >
+            <div className="flex items-center gap-3 hover:[&_button]:scale-105">
+              <button onClick={() => setLang(lang === "en" ? "bn" : "en")} className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full border transition" style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)" }}>
                 <Globe size={12} style={{ color: purple }} /> {lang === "en" ? "বাংলা" : "English"}
               </button>
-              <div
-                className="hidden sm:flex items-center gap-2.5 text-xs font-medium px-4 py-2 rounded-full border"
-                style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)" }}
-              >
-                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#10b981" }} />
-                {bdTime} • BD
+              <div className="hidden sm:flex items-center gap-2.5 text-xs font-medium px-4 py-2 rounded-full border" style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)" }}>
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#10b981" }} /> {bdTime} • BD
               </div>
-              <button
-                onClick={() => setDark(!dark)}
-                className="w-9 h-9 rounded-full flex items-center justify-center border transition hover:scale-105"
-                style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", color: text }}
-                aria-label="Toggle theme"
-              >
+              <button onClick={() => setDark(!dark)} className="w-9 h-9 rounded-full flex items-center justify-center border transition" style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", color: text }}>
                 {dark ? <Moon size={14} style={{ color: purple }} /> : <Sun size={14} style={{ color: accentGold }} />}
               </button>
             </div>
           </header>
 
-          <div className="hidden md:flex flex-col gap-6 text-right absolute" style={{ right: "4rem", top: "15%" }}>
+          <div className="hidden md:flex flex-col gap-6 text-right absolute avash-reveal avash-delay-100" style={{ right: "4rem", top: "15%" }}>
             {t.nav.map((l, i) => (
-              <a
-                key={l}
-                href={i === 0 ? "#work" : i === 1 ? "#work" : "#contact"}
-                className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition"
-                style={{ color: dim, textDecoration: "none" }}
-              >
+              <a key={l} href={i === 0 ? "#work" : i === 1 ? "#work" : "#contact"} className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition hover:scale-110 origin-right" style={{ color: dim, textDecoration: "none" }}>
                 {l}
               </a>
             ))}
           </div>
 
           <main className="flex-1 relative flex items-center justify-between py-16">
-            <div className="flex-1 flex flex-col z-10" style={{ gap: "4rem" }}>
+            <div className="flex-1 flex flex-col z-10 avash-reveal avash-delay-100" style={{ gap: "4rem" }}>
               <div className="text-sm md:text-base font-medium tracking-widest leading-relaxed" style={{ color: dim }}>
                 {t.hello}
                 <br />
@@ -363,9 +383,12 @@ export default function PublicSite() {
               </a>
             </div>
 
+            {/* Parallax Center Elements */}
             <div className="absolute left-1/2 top-1/2 text-center w-full flex flex-col items-center justify-center pointer-events-none" style={{ transform: "translate(-50%, -50%)" }}>
               <h1
+                className="avash-reveal"
                 style={{
+                  transform: `translateY(${scrollY * 0.45}px)`,
                   fontFamily: "'Anton', sans-serif",
                   fontSize: "clamp(3.5rem, 11vw, 11rem)",
                   lineHeight: 0.8,
@@ -381,7 +404,7 @@ export default function PublicSite() {
                 STRUCTURE
               </h1>
 
-              <div className="relative flex items-center justify-center pointer-events-auto" style={{ height: "42vh", zIndex: 15, margin: "1rem 0" }}>
+              <div className="relative flex items-center justify-center pointer-events-auto avash-reveal avash-delay-100" style={{ height: "42vh", zIndex: 15, margin: "1rem 0", transform: `translateY(${scrollY * 0.15}px)` }}>
                 {photo ? (
                   <img 
                     src={photo} 
@@ -397,31 +420,14 @@ export default function PublicSite() {
                     }} 
                   />
                 ) : (
-                  <div
-                    style={{
-                      height: "100%",
-                      width: 180,
-                      borderRadius: "90px 90px 0 0",
-                      background: `linear-gradient(180deg, ${purple}44, ${purple}00)`,
-                      border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 11,
-                      letterSpacing: 1,
-                      color: dim,
-                      textAlign: "center",
-                    }}
-                  >
-                    YOUR PHOTO
-                    <br />
-                    (PNG, no bg)
-                  </div>
+                  <div style={{ height: "100%", width: 180, borderRadius: "90px 90px 0 0", background: `linear-gradient(180deg, ${purple}44, ${purple}00)`, border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: dim, textAlign: "center" }}>YOUR PHOTO<br/>(PNG)</div>
                 )}
               </div>
 
               <h1
+                className="avash-reveal avash-delay-200"
                 style={{
+                  transform: `translateY(${scrollY * -0.15}px)`,
                   fontFamily: "'Anton', sans-serif",
                   fontSize: "clamp(3.5rem, 11vw, 11rem)",
                   lineHeight: 0.8,
@@ -438,7 +444,7 @@ export default function PublicSite() {
               </h1>
             </div>
 
-            <div className="hidden md:flex flex-1 flex-col items-end text-right z-10" style={{ gap: "3rem", height: "100%", justifyContent: "flex-end", paddingBottom: "2rem" }}>
+            <div className="hidden md:flex flex-1 flex-col items-end text-right z-10 avash-reveal avash-delay-200" style={{ gap: "3rem", height: "100%", justifyContent: "flex-end", paddingBottom: "2rem" }}>
               <p style={{ maxWidth: 280, fontSize: "0.85rem", lineHeight: 1.7, color: dim, fontWeight: 300 }}>{tagline.toUpperCase()}</p>
               <div className="flex flex-col gap-2.5">
                 {stats.projectsCount && (
@@ -459,10 +465,7 @@ export default function PublicSite() {
         </div>
 
         {marquee && (
-          <div
-            className="absolute bottom-0 left-0 w-full flex overflow-hidden backdrop-blur-md"
-            style={{ background: dark ? "rgba(139, 92, 246, 0.03)" : "rgba(0,0,0,0.02)", borderTop: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, padding: "14px 0", zIndex: 20 }}
-          >
+          <div className="absolute bottom-0 left-0 w-full flex overflow-hidden backdrop-blur-md avash-reveal avash-delay-300" style={{ background: dark ? "rgba(139, 92, 246, 0.03)" : "rgba(0,0,0,0.02)", borderTop: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, padding: "14px 0", zIndex: 20 }}>
             <div style={{ fontFamily: "'Anton', sans-serif", fontSize: "1.1rem", color: dim, letterSpacing: "1px", whiteSpace: "nowrap", animation: "avash-marquee 25s linear infinite" }}>
               {(marquee + " ✦ ").repeat(3)}
             </div>
@@ -471,21 +474,18 @@ export default function PublicSite() {
         )}
       </div>
 
-      {/* ===== FEATURED SLIDESHOW ===== */}
-      {!loading && (
-        <FeaturedSlideshow projects={projects} dark={dark} dim={dim} text={text} purple={purple} label={t.featuredLabel} />
-      )}
+      {!loading && <FeaturedSlideshow projects={projects} dark={dark} dim={dim} text={text} purple={purple} label={t.featuredLabel} />}
 
       {/* ===== WORK ===== */}
       <section id="work" className="max-w-6xl mx-auto px-6 md:px-16 py-24">
-        <p className="text-xs tracking-[0.25em] mb-8 font-semibold" style={{ color: purple }}>{t.whatIDo}</p>
+        <p className="text-xs tracking-[0.25em] mb-8 font-semibold avash-reveal" style={{ color: purple }}>{t.whatIDo}</p>
 
-        <div className="flex flex-wrap gap-2.5 mb-12">
+        <div className="flex flex-wrap gap-2.5 mb-12 avash-reveal">
           {SEGMENT_DEFS.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setActiveSegment(i)}
-              className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase border transition-all duration-300"
+              className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase border transition-all duration-300 hover:scale-105"
               style={{
                 borderColor: activeSegment === i ? purple : dark ? "rgba(255,255,255,0.1)" : "#dcdcdc",
                 background: activeSegment === i ? purple : "transparent",
@@ -498,7 +498,7 @@ export default function PublicSite() {
           ))}
         </div>
 
-        <h2 className="mb-12" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2.2rem", textTransform: "uppercase", letterSpacing: 1 }}>
+        <h2 className="mb-12 avash-reveal" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2.2rem", textTransform: "uppercase", letterSpacing: 1 }}>
           {segDef.label[lang]}
         </h2>
 
@@ -508,19 +508,20 @@ export default function PublicSite() {
           <p className="text-sm" style={{ color: dim }}>{t.empty}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {segProjects.map((p) => (
+            {segProjects.map((p, idx) => (
               <div 
                 key={p.id} 
                 onClick={() => setSelectedProject(p)}
-                className="cursor-pointer group rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:border-purple-500/40 relative" 
-                style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)" }}
+                onMouseEnter={() => setIsHoveringProject(true)}
+                onMouseLeave={() => setIsHoveringProject(false)}
+                className="cursor-none group rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:border-purple-500/40 relative avash-reveal" 
+                style={{ animationDelay: `${(idx % 3) * 100}ms`, borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)" }}
               >
                 <div
                   className="relative rounded-xl h-48 mb-5 flex items-center justify-center text-xs overflow-hidden border border-white/5"
                   style={{ background: p.images?.[0] ? `url('${getThumb(p.images[0])}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
-                  {/* ব্যাজ: কতগুলো মিডিয়া আছে */}
                   {p.images?.length > 1 && (
                     <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md flex items-center gap-1.5 backdrop-blur-md" style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
                       <Images size={12} /> <span className="text-[10px] font-bold">{p.images.length}</span>
@@ -528,7 +529,7 @@ export default function PublicSite() {
                   )}
                 </div>
                 
-                <h4 className="text-base font-bold tracking-wide" style={{ color: text }}>{p.title}</h4>
+                <h4 className="text-base font-bold tracking-wide transition-colors group-hover:text-purple-400" style={{ color: text }}>{p.title}</h4>
                 <p className="text-xs mt-1.5 font-semibold" style={{ color: purple }}>
                   {p.tags?.join(", ")} {p.tags?.length ? "·" : ""} {p.year}
                 </p>
@@ -545,7 +546,7 @@ export default function PublicSite() {
       </section>
 
       {/* ===== CONTACT ===== */}
-      <footer id="contact" className="max-w-6xl mx-auto px-6 md:px-16 py-24 border-t" style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2" }}>
+      <footer id="contact" className="max-w-6xl mx-auto px-6 md:px-16 py-24 border-t avash-reveal" style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2" }}>
         <p className="text-xs tracking-[0.25em] mb-4 font-semibold" style={{ color: purple }}>{t.getInTouch}</p>
         <h3 className="mb-4" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2.2rem", textTransform: "uppercase", letterSpacing: 1 }}>{t.haveProject}</h3>
         <p className="text-sm max-w-md mb-8 leading-relaxed" style={{ color: dim }}>{t.contactBody}</p>
