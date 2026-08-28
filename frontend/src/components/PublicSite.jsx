@@ -416,21 +416,3 @@ export default function PublicSite() {
             ))}
           </div>
         )}
-      </section>
-
-      {/* ===== CONTACT ===== */}
-      <footer id="contact" className="max-w-6xl mx-auto px-6 md:px-16 py-20 border-t" style={{ borderColor: dark ? "#232323" : "#e2e2e2" }}>
-        <p className="text-xs tracking-[0.25em] mb-4 font-medium" style={{ color: purple }}>{t.getInTouch}</p>
-        <h3 className="mb-4" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2rem", textTransform: "uppercase" }}>{t.haveProject}</h3>
-        <p className="text-sm max-w-md mb-8" style={{ color: dim }}>{t.contactBody}</p>
-        <div className="flex flex-col gap-2">
-          <a href={`mailto:${settings?.email}`} className="text-sm underline" style={{ color: text }}>{settings?.email}</a>
-          {settings?.phone && <a href={`tel:${settings.phone}`} className="text-sm underline" style={{ color: text }}>{settings.phone}</a>}
-        </div>
-        <div className="mt-16 pt-6 border-t text-xs" style={{ borderColor: dark ? "#232323" : "#e2e2e2", color: dim }}>
-          © {new Date().getFullYear()} ArchViz by {name}
-        </div>
-      </footer>
-    </div>
-  );
-}
