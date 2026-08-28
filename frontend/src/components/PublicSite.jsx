@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { api } from "../lib/api.js";
 
 const FONT_ID = "avash-fonts";
@@ -62,6 +62,39 @@ function useBdClock() {
   return time;
 }
 
+// হেল্পার ফাংশন: ইউটিউব লিংক থেকে থাম্বনেইল বের করার জন্য
+function getThumb(url) {
+  if (!url) return "";
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  }
+  return url;
+}
+
+// হেল্পার কম্পোনেন্ট: ভিডিও এবং ছবি রেন্ডার করার জন্য
+function MediaViewer({ url }) {
+  if (!url) return null;
+  
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
+    return <iframe className="w-full aspect-video" src={`https://www.youtube.com/embed/${videoId}`} allowFullScreen></iframe>;
+  }
+  if (url.includes('vimeo.com')) {
+    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+    return <iframe className="w-full aspect-video" src={`https://player.vimeo.com/video/${videoId}`} allowFullScreen></iframe>;
+  }
+  if (url.match(/\.(mp4|webm|ogg)$/i)) {
+    return <video className="w-full aspect-video" controls src={url}></video>;
+  }
+  if (url.includes('drive.google.com') && url.includes('/view')) {
+    const embedUrl = url.replace('/view', '/preview').replace('?usp=sharing', '');
+    return <iframe className="w-full aspect-video" src={embedUrl} allowFullScreen></iframe>;
+  }
+  
+  return <img src={url} className="w-full h-auto object-contain" alt="Project media" />;
+}
+
 function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
   const slides = projects.filter((p) => p.featured && p.images?.[0]);
   const [index, setIndex] = useState(0);
@@ -88,7 +121,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
             className="absolute inset-0 transition-opacity duration-700"
             style={{
               opacity: i === index ? 1 : 0,
-              backgroundImage: `url('${p.images[0]}')`,
+              backgroundImage: `url('${getThumb(p.images[0])}')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -155,7 +188,6 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
 export default function PublicSite() {
   useFonts();
   
-  // State Initialization Order Fixed!
   const [activeSegment, setActiveSegment] = useState(0); 
   const [lang, setLang] = useState("en");
   const [dark, setDark] = useState(true);
@@ -163,11 +195,13 @@ export default function PublicSite() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // মডাল স্টেট
+  const [selectedProject, setSelectedProject] = useState(null);
+  
   const t = COPY[lang];
   const bdTime = useBdClock();
 
   useEffect(() => {
-    // API Call with error catching so the UI doesn't break if backend fails
     Promise.all([
       api.getSettings().catch(() => ({ settings: {} })), 
       api.listProjects().catch(() => ({ projects: [] }))
@@ -182,13 +216,18 @@ export default function PublicSite() {
       .finally(() => setLoading(false));
   }, []);
 
+  // মডাল ওপেন থাকলে পেজ স্ক্রল বন্ধ রাখা
+  useEffect(() => {
+    if (selectedProject) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+  }, [selectedProject]);
+
   const bg = dark ? "#08090d" : "#f7f7f4";
   const text = dark ? "#f3f4f6" : "#111827";
   const dim = dark ? "#9ca3af" : "#4b5563";
   const purple = "#8b5cf6";
   const accentGold = "#d4af37";
 
-  // Using optional chaining/defaulting to prevent initialization errors
   const segDef = SEGMENT_DEFS[activeSegment ?? 0]; 
   const segProjects = projects.filter((p) => p.segment === segDef.id);
 
@@ -201,6 +240,52 @@ export default function PublicSite() {
 
   return (
     <div style={{ background: bg, color: text, fontFamily: "'Inter', sans-serif", minHeight: "100vh" }}>
+      
+      {/* ===== PROJECT MODAL POPUP ===== */}
+      {selectedProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" style={{ background: dark ? "rgba(0,0,0,0.85)" : "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)" }}>
+          <div 
+            className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 md:p-10 shadow-2xl" 
+            style={{ background: dark ? "#11141d" : "#ffffff", border: `1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}` }}
+          >
+            <button 
+              onClick={() => setSelectedProject(null)} 
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-red-500 hover:text-white transition-colors" 
+              style={{ background: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }}
+            >
+              <X size={20} />
+            </button>
+            
+            <h2 style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", textTransform: "uppercase", letterSpacing: 1, marginBottom: "0.5rem" }}>
+              {selectedProject.title}
+            </h2>
+            <p className="text-sm md:text-base mb-6" style={{ color: purple, fontWeight: 600 }}>
+              {selectedProject.tags?.join(", ")} {selectedProject.tags?.length ? "·" : ""} {selectedProject.year}
+            </p>
+            
+            {selectedProject.description && (
+              <p className="text-sm md:text-base leading-relaxed mb-10 whitespace-pre-wrap" style={{ color: dim }}>
+                {selectedProject.description}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-8">
+              {selectedProject.images?.map((url, idx) => (
+                <div key={idx} className="w-full rounded-2xl overflow-hidden border shadow-lg" style={{ borderColor: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", background: dark ? "#0a0c12" : "#f3f4f6" }}>
+                  <MediaViewer url={url} />
+                </div>
+              ))}
+            </div>
+            
+            {selectedProject.pdfUrl && (
+              <a href={selectedProject.pdfUrl} target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-transform hover:scale-105" style={{ background: purple, color: "#fff" }}>
+                 View Attached PDF <ArrowUpRight size={16} />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ===== HERO ===== */}
       <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
         <div
@@ -426,24 +511,33 @@ export default function PublicSite() {
             {segProjects.map((p) => (
               <div 
                 key={p.id} 
-                className="group rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:border-purple-500/40" 
+                onClick={() => setSelectedProject(p)}
+                className="cursor-pointer group rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:border-purple-500/40 relative" 
                 style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)" }}
               >
                 <div
-                  className="rounded-xl h-44 mb-5 flex items-center justify-center text-xs overflow-hidden border border-white/5"
-                  style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
+                  className="relative rounded-xl h-48 mb-5 flex items-center justify-center text-xs overflow-hidden border border-white/5"
+                  style={{ background: p.images?.[0] ? `url('${getThumb(p.images[0])}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
-                </div>
-                <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-sm font-semibold tracking-wide" style={{ color: text }}>{p.title}</h4>
-                  {p.pdfUrl && (
-                    <a href={p.pdfUrl} target="_blank" rel="noreferrer" className="p-1 rounded-full border border-white/10 hover:border-purple-500 transition-colors">
-                      <ArrowUpRight size={14} className="shrink-0" style={{ color: purple }} />
-                    </a>
+                  {/* ব্যাজ: কতগুলো মিডিয়া আছে */}
+                  {p.images?.length > 1 && (
+                    <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md flex items-center gap-1.5 backdrop-blur-md" style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
+                      <Images size={12} /> <span className="text-[10px] font-bold">{p.images.length}</span>
+                    </div>
                   )}
                 </div>
-                <p className="text-xs mt-2.5 font-medium" style={{ color: dim }}>{p.tags?.join(", ")} {p.tags?.length ? "·" : ""} {p.year}</p>
+                
+                <h4 className="text-base font-bold tracking-wide" style={{ color: text }}>{p.title}</h4>
+                <p className="text-xs mt-1.5 font-semibold" style={{ color: purple }}>
+                  {p.tags?.join(", ")} {p.tags?.length ? "·" : ""} {p.year}
+                </p>
+                
+                {p.description && (
+                  <p className="text-sm mt-3 leading-relaxed" style={{ color: dim, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {p.description}
+                  </p>
+                )}
               </div>
             ))}
           </div>
