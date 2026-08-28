@@ -51,7 +51,7 @@ export default function AdminPanel() {
       refreshProjects();
       api.getSettings().then((d) => setSettingsForm({
         ...d.settings,
-        defaultTheme: d.settings?.defaultTheme || "dark" // ডিফল্ট থিম হ্যান্ডেল করার জন্য
+        defaultTheme: d.settings?.defaultTheme || "dark" 
       }));
     }
   }, [session]);
@@ -220,7 +220,7 @@ export default function AdminPanel() {
               style={{ borderColor: "#2a2f3d" }}
             />
             
-            {/* ডিফল্ট থিম সিলেক্ট করার অপশন */}
+            {/* Default Theme Selector */}
             <div className="flex flex-col gap-1">
               <label className="text-xs" style={{ color: "#8b8f9c" }}>Default Theme for Website:</label>
               <select
