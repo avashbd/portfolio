@@ -154,25 +154,31 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
 
 export default function PublicSite() {
   useFonts();
+  
+  // State Initialization Order Fixed!
+  const [activeSegment, setActiveSegment] = useState(0); 
   const [lang, setLang] = useState("en");
   const [dark, setDark] = useState(true);
   const [settings, setSettings] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  
   const t = COPY[lang];
   const bdTime = useBdClock();
 
   useEffect(() => {
-    Promise.all([api.getSettings(), api.listProjects()])
+    // API Call with error catching so the UI doesn't break if backend fails
+    Promise.all([
+      api.getSettings().catch(() => ({ settings: {} })), 
+      api.listProjects().catch(() => ({ projects: [] }))
+    ])
       .then(([s, p]) => {
-        setSettings(s.settings);
+        setSettings(s.settings || {});
         setProjects(p.projects || []);
-        // অ্যাডমিন প্যানেল থেকে সেট করা ডিফল্ট থিম এখানে এপ্লাই হবে
         if (s.settings?.defaultTheme) {
           setDark(s.settings.defaultTheme === "dark");
         }
       })
-      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -182,8 +188,8 @@ export default function PublicSite() {
   const purple = "#8b5cf6";
   const accentGold = "#d4af37";
 
-  const segDef = SEGMENT_DEFS[activeSegment ?? 0];
-  const [activeSegment, setActiveSegment] = useState(0);
+  // Using optional chaining/defaulting to prevent initialization errors
+  const segDef = SEGMENT_DEFS[activeSegment ?? 0]; 
   const segProjects = projects.filter((p) => p.segment === segDef.id);
 
   const name = settings?.name || "Avash";
