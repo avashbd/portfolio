@@ -30,7 +30,7 @@ function GoogleLoginButton({ onToken }) {
 }
 
 export default function AdminPanel() {
-  const [session, setSession] = useState(null); // { isAdmin, email } | null while loading
+  const [session, setSession] = useState(null);
   const [notAdminEmail, setNotAdminEmail] = useState(null);
   const [projects, setProjects] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -49,7 +49,10 @@ export default function AdminPanel() {
   useEffect(() => {
     if (session?.isAdmin) {
       refreshProjects();
-      api.getSettings().then((d) => setSettingsForm(d.settings));
+      api.getSettings().then((d) => setSettingsForm({
+        ...d.settings,
+        defaultTheme: d.settings?.defaultTheme || "dark" // ডিফল্ট থিম হ্যান্ডেল করার জন্য
+      }));
     }
   }, [session]);
 
@@ -179,24 +182,24 @@ export default function AdminPanel() {
         {/* Profile settings */}
         {settingsForm && (
           <form onSubmit={handleSaveSettings} className="mb-8 p-5 rounded-xl border grid grid-cols-1 md:grid-cols-2 gap-4" style={{ borderColor: "#232733" }}>
-            <p className="text-sm font-medium md:col-span-2" style={{ color: "#8b8f9c" }}>Profile Settings</p>
+            <p className="text-sm font-medium md:col-span-2" style={{ color: "#8b8f9c" }}>Profile Settings & Default Theme</p>
             <input
               placeholder="Your name"
-              value={settingsForm.name}
+              value={settingsForm.name || ""}
               onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
               className="bg-transparent border rounded-lg px-3 py-2 text-sm"
               style={{ borderColor: "#2a2f3d" }}
             />
             <input
               placeholder="Phone"
-              value={settingsForm.phone}
+              value={settingsForm.phone || ""}
               onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
               className="bg-transparent border rounded-lg px-3 py-2 text-sm"
               style={{ borderColor: "#2a2f3d" }}
             />
             <textarea
               placeholder="Tagline / short bio"
-              value={settingsForm.tagline}
+              value={settingsForm.tagline || ""}
               onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
               className="bg-transparent border rounded-lg px-3 py-2 text-sm md:col-span-2"
               rows={2}
@@ -204,7 +207,7 @@ export default function AdminPanel() {
             />
             <input
               placeholder="Contact email"
-              value={settingsForm.email}
+              value={settingsForm.email || ""}
               onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
               className="bg-transparent border rounded-lg px-3 py-2 text-sm md:col-span-2"
               style={{ borderColor: "#2a2f3d" }}
@@ -216,11 +219,26 @@ export default function AdminPanel() {
               className="bg-transparent border rounded-lg px-3 py-2 text-sm"
               style={{ borderColor: "#2a2f3d" }}
             />
+            
+            {/* ডিফল্ট থিম সিলেক্ট করার অপশন */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs" style={{ color: "#8b8f9c" }}>Default Theme for Website:</label>
+              <select
+                value={settingsForm.defaultTheme || "dark"}
+                onChange={(e) => setSettingsForm({ ...settingsForm, defaultTheme: e.target.value })}
+                className="bg-transparent border rounded-lg px-3 py-2 text-sm"
+                style={{ borderColor: "#2a2f3d" }}
+              >
+                <option value="dark" style={{ background: "#14161d" }}>Dark Theme</option>
+                <option value="light" style={{ background: "#14161d" }}>Light Theme</option>
+              </select>
+            </div>
+
             <input
               placeholder="Marquee text"
-              value={settingsForm.marqueeText}
+              value={settingsForm.marqueeText || ""}
               onChange={(e) => setSettingsForm({ ...settingsForm, marqueeText: e.target.value })}
-              className="bg-transparent border rounded-lg px-3 py-2 text-sm"
+              className="bg-transparent border rounded-lg px-3 py-2 text-sm md:col-span-2"
               style={{ borderColor: "#2a2f3d" }}
             />
             {["facebook", "linkedin", "instagram", "github", "dribbble"].map((key) => (
