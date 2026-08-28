@@ -14,6 +14,9 @@ function useFonts() {
   }, []);
 }
 
+// আপনার নিজের 3D অ্যানিমেশনের ভিডিও লিংক (MP4) এখানে বসাবেন
+const HERO_VIDEO_URL = "https://drive.google.com/file/d/19mUVqOKpOqfx1-8luBrsHAMFs7Cfj408"; 
+
 const SEGMENT_DEFS = [
   { id: "3d", label: { en: "3D Visualization", bn: "থ্রিডি ভিজ্যুয়ালাইজেশন" } },
   { id: "other", label: { en: "Structural & Other Work", bn: "স্ট্রাকচারাল ও অন্যান্য কাজ" } },
@@ -317,22 +320,27 @@ export default function PublicSite() {
         </div>
       )}
 
-      {/* ===== HERO (ID="ABOUT" ADDED HERE) ===== */}
+      {/* ===== HERO (ID="ABOUT") ===== */}
       <div id="about" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-        <div
-          className="avash-reveal"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "45vw",
-            height: "75vh",
-            background: `radial-gradient(circle, ${purple}25 0%, rgba(139, 92, 246, 0) 70%)`,
-            zIndex: 0,
-            pointerEvents: "none",
-          }}
-        />
+        
+        {/* ===== CINEMATIC VIDEO BACKGROUND ===== */}
+        <div className="absolute inset-0 z-0 overflow-hidden avash-reveal">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover"
+            style={{ opacity: dark ? 0.35 : 0.2 }}
+          >
+            <source src={HERO_VIDEO_URL} type="video/mp4" />
+          </video>
+          {/* Overlay to smoothly blend the video with the site's background color */}
+          <div 
+            className="absolute inset-0" 
+            style={{ background: dark ? "linear-gradient(180deg, rgba(8,9,13,0.3) 0%, #08090d 100%)" : "linear-gradient(180deg, rgba(247,247,244,0.3) 0%, #f7f7f4 100%)" }} 
+          />
+        </div>
 
         <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-16 py-8 flex flex-col" style={{ minHeight: "100vh" }}>
           <header className="flex justify-between items-start mb-8 avash-reveal">
@@ -354,7 +362,6 @@ export default function PublicSite() {
           </header>
 
           <div className="hidden md:flex flex-col gap-6 text-right absolute avash-reveal avash-delay-100" style={{ right: "4rem", top: "15%" }}>
-            {/* Nav Href Fixed: i === 0 is now '#about' */}
             {t.nav.map((l, i) => (
               <a key={l} href={i === 0 ? "#about" : i === 1 ? "#work" : "#contact"} className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition hover:scale-110 origin-right" style={{ color: dim, textDecoration: "none" }}>
                 {l}
