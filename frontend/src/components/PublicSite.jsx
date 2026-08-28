@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe, ChevronLeft, ChevronRight, X, Images, PlayCircle } from "lucide-react";
+import { ArrowUpRight, Facebook, Linkedin, Instagram, Github, Dribbble, Moon, Sun, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { api } from "../lib/api.js";
 
 const FONT_ID = "avash-fonts";
@@ -62,59 +62,6 @@ function useBdClock() {
   return time;
 }
 
-// SMART THUMBNAIL EXTRACTOR
-// এটি চেক করবে লিংকটি কি ভিডিও নাকি ছবি। ভিডিও হলে একটি ডিফল্ট থাম্বনেইল রিটার্ন করবে যেন স্ক্রিন ব্ল্যাঙ্ক না হয়।
-function getThumb(url) {
-  if (!url) return "";
-  
-  // YouTube Thumbnail
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
-    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-  }
-  
-  // Vimeo Thumbnail Fallback
-  if (url.includes('vimeo.com')) {
-    return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop"; 
-  }
-  
-  // Google Drive Video or Direct MP4 Fallback
-  if (url.includes('drive.google.com') || url.match(/\.(mp4|webm|ogg)$/i)) {
-    // Return a beautiful dark architectural placeholder image instead of blank
-    return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop";
-  }
-  
-  return url;
-}
-
-// চেক করার জন্য যে এটি কি আসলেই একটি ভিডিও?
-function isVideo(url) {
-  if (!url) return false;
-  return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com') || url.includes('drive.google.com') || url.match(/\.(mp4|webm|ogg)$/i);
-}
-
-function MediaViewer({ url }) {
-  if (!url) return null;
-  
-  if (url.includes('youtube.com') || url.includes('youtu.be')) {
-    const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
-    return <iframe className="w-full aspect-video rounded-xl" src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} allow="autoplay; encrypted-media" allowFullScreen></iframe>;
-  }
-  if (url.includes('vimeo.com')) {
-    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
-    return <iframe className="w-full aspect-video rounded-xl" src={`https://player.vimeo.com/video/${videoId}?autoplay=1`} allow="autoplay; fullscreen" allowFullScreen></iframe>;
-  }
-  if (url.includes('drive.google.com/uc') || url.match(/\.(mp4|webm|ogg)$/i)) {
-    return <video className="w-full aspect-video rounded-xl" controls autoPlay src={url}></video>;
-  }
-  if (url.includes('drive.google.com') && url.includes('/view')) {
-    const embedUrl = url.replace('/view', '/preview').replace('?usp=sharing', '');
-    return <iframe className="w-full aspect-video rounded-xl" src={embedUrl} allowFullScreen></iframe>;
-  }
-  
-  return <img src={url} className="w-full h-auto object-contain rounded-xl" alt="Project media" />;
-}
-
 function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
   const slides = projects.filter((p) => p.featured && p.images?.[0]);
   const [index, setIndex] = useState(0);
@@ -141,18 +88,11 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
             className="absolute inset-0 transition-opacity duration-700"
             style={{
               opacity: i === index ? 1 : 0,
-              backgroundImage: `url('${getThumb(p.images[0])}')`,
+              backgroundImage: `url('${p.images[0]}')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
-          >
-             {/* If the cover is a video, show a nice play button icon on the slideshow */}
-             {i === index && isVideo(p.images[0]) && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-50">
-                   <PlayCircle size={64} color="#fff" strokeWidth={1} />
-                </div>
-             )}
-          </div>
+          />
         ))}
 
         <div
@@ -332,7 +272,7 @@ export default function PublicSite() {
             <div className="flex flex-col gap-8">
               {selectedProject.images?.map((url, idx) => (
                 <div key={idx} className="w-full rounded-xl overflow-hidden border shadow-lg" style={{ borderColor: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", background: dark ? "#0a0c12" : "#f3f4f6" }}>
-                  <MediaViewer url={url} />
+                  <img src={url} className="w-full h-auto object-contain" alt="Project detail" />
                 </div>
               ))}
             </div>
@@ -349,24 +289,21 @@ export default function PublicSite() {
       {/* ===== HERO (ID="ABOUT") ===== */}
       <div id="about" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
         
-        {/* ===== CINEMATIC VIDEO BACKGROUND ===== */}
-        <div className="absolute inset-0 z-0 overflow-hidden avash-reveal">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover"
-            style={{ opacity: dark ? 0.35 : 0.15 }}
-          >
-            <source src="/hero.mp4" type="video/mp4" />
-          </video>
-          {/* Overlay to smoothly blend the video with the site's background color */}
-          <div 
-            className="absolute inset-0" 
-            style={{ background: dark ? "linear-gradient(180deg, rgba(8,9,13,0.5) 0%, #08090d 100%)" : "linear-gradient(180deg, rgba(247,247,244,0.5) 0%, #f7f7f4 100%)" }} 
-          />
-        </div>
+        {/* Soft atmospheric gradient glow behind the center */}
+        <div
+          className="avash-reveal"
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "45vw",
+            height: "75vh",
+            background: `radial-gradient(circle, ${purple}25 0%, rgba(139, 92, 246, 0) 70%)`,
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
 
         <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-16 py-8 flex flex-col" style={{ minHeight: "100vh" }}>
           <header className="flex justify-between items-start mb-8 avash-reveal">
@@ -405,7 +342,7 @@ export default function PublicSite() {
               <a
                 href="#contact"
                 className="flex items-center justify-center rounded-full transition-all duration-500 hover:scale-110 group shadow-lg"
-                style={{ width: 110, height: 110, border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, textDecoration: "none", color: text, background: dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.5)", backdropFilter: "blur(12px)" }}
+                style={{ width: 110, height: 110, border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, textDecoration: "none", color: text, background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", backdropFilter: "blur(10px)" }}
               >
                 <ArrowUpRight size={32} strokeWidth={1.5} className="group-hover:rotate-45 transition-transform duration-500" style={{ color: purple }} />
               </a>
@@ -546,16 +483,9 @@ export default function PublicSite() {
               >
                 <div
                   className="relative rounded-xl h-48 mb-5 flex items-center justify-center text-xs overflow-hidden border border-white/5"
-                  style={{ background: p.images?.[0] ? `url('${getThumb(p.images[0])}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
+                  style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
-                  {/* Show Play Icon if the cover is a video */}
-                  {p.images?.[0] && isVideo(p.images[0]) && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                      <PlayCircle size={40} color="#fff" strokeWidth={1.5} />
-                    </div>
-                  )}
-                  {/* Badge for multiple media files */}
                   {p.images?.length > 1 && (
                     <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md flex items-center gap-1.5 backdrop-blur-md" style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>
                       <Images size={12} /> <span className="text-[10px] font-bold">{p.images.length}</span>
