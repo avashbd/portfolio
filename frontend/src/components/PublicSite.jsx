@@ -14,9 +14,6 @@ function useFonts() {
   }, []);
 }
 
-// আপনার নিজের 3D অ্যানিমেশনের ভিডিও লিংক (MP4) এখানে বসাবেন
-const HERO_VIDEO_URL = "https://drive.google.com/file/d/19mUVqOKpOqfx1-8luBrsHAMFs7Cfj408"; 
-
 const SEGMENT_DEFS = [
   { id: "3d", label: { en: "3D Visualization", bn: "থ্রিডি ভিজ্যুয়ালাইজেশন" } },
   { id: "other", label: { en: "Structural & Other Work", bn: "স্ট্রাকচারাল ও অন্যান্য কাজ" } },
@@ -71,6 +68,10 @@ function getThumb(url) {
     const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
+  // If it's a video link, return a fallback so it doesn't break the CSS
+  if (url.includes('drive.google.com/file') || url.match(/\.(mp4|webm|ogg)$/i)) {
+    return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1000&auto=format&fit=crop"; // Placeholder for video
+  }
   return url;
 }
 
@@ -91,6 +92,9 @@ function MediaViewer({ url }) {
   if (url.includes('drive.google.com') && url.includes('/view')) {
     const embedUrl = url.replace('/view', '/preview').replace('?usp=sharing', '');
     return <iframe className="w-full aspect-video" src={embedUrl} allowFullScreen></iframe>;
+  }
+  if (url.includes('drive.google.com/uc')) {
+    return <video className="w-full aspect-video" controls src={url}></video>;
   }
   
   return <img src={url} className="w-full h-auto object-contain" alt="Project media" />;
@@ -323,24 +327,21 @@ export default function PublicSite() {
       {/* ===== HERO (ID="ABOUT") ===== */}
       <div id="about" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
         
-        {/* ===== CINEMATIC VIDEO BACKGROUND ===== */}
-        <div className="absolute inset-0 z-0 overflow-hidden avash-reveal">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover"
-            style={{ opacity: dark ? 0.35 : 0.2 }}
-          >
-            <source src={HERO_VIDEO_URL} type="video/mp4" />
-          </video>
-          {/* Overlay to smoothly blend the video with the site's background color */}
-          <div 
-            className="absolute inset-0" 
-            style={{ background: dark ? "linear-gradient(180deg, rgba(8,9,13,0.3) 0%, #08090d 100%)" : "linear-gradient(180deg, rgba(247,247,244,0.3) 0%, #f7f7f4 100%)" }} 
-          />
-        </div>
+        {/* REVERTED TO BEAUTIFUL GRADIENT BACKGROUND */}
+        <div
+          className="avash-reveal"
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "45vw",
+            height: "75vh",
+            background: `radial-gradient(circle, ${purple}25 0%, rgba(139, 92, 246, 0) 70%)`,
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
 
         <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-16 py-8 flex flex-col" style={{ minHeight: "100vh" }}>
           <header className="flex justify-between items-start mb-8 avash-reveal">
