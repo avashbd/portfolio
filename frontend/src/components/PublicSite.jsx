@@ -81,7 +81,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
   return (
     <section className="max-w-6xl mx-auto px-6 md:px-16 pt-20">
       <p className="text-xs tracking-[0.25em] mb-6 font-medium" style={{ color: purple }}>{label}</p>
-      <div className="relative rounded-2xl overflow-hidden" style={{ height: "60vh", minHeight: 320, background: dark ? "#1a1a1a" : "#eaeaea" }}>
+      <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl" style={{ height: "60vh", minHeight: 320, background: dark ? "#14161f" : "#eaeaea" }}>
         {slides.map((p, i) => (
           <div
             key={p.id}
@@ -97,14 +97,14 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
 
         <div
           className="absolute inset-0"
-          style={{ background: "linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0) 70%)" }}
+          style={{ background: dark ? "linear-gradient(0deg, rgba(8,9,13,0.9) 0%, rgba(8,9,13,0.3) 50%, rgba(8,9,13,0) 80%)" : "linear-gradient(0deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 80%)" }}
         />
 
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <h3 style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2.2rem)", color: "#f4f4f0", textTransform: "uppercase" }}>
+          <h3 style={{ fontFamily: "'Anton', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2.2rem)", color: text, textTransform: "uppercase" }}>
             {current.title}
           </h3>
-          <p className="text-xs md:text-sm mt-1" style={{ color: "rgba(244,244,240,0.75)" }}>
+          <p className="text-xs md:text-sm mt-1" style={{ color: dim }}>
             {current.tags?.join(", ")} {current.tags?.length ? "·" : ""} {current.year}
           </p>
         </div>
@@ -114,16 +114,16 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
             <button
               onClick={goPrev}
               aria-label="Previous slide"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(0,0,0,0.4)", color: "#fff", border: "none" }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md"
+              style={{ background: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)", color: text, border: "1px solid rgba(255,255,255,0.1)" }}
             >
               <ChevronLeft size={18} />
             </button>
             <button
               onClick={goNext}
               aria-label="Next slide"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(0,0,0,0.4)", color: "#fff", border: "none" }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md"
+              style={{ background: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)", color: text, border: "1px solid rgba(255,255,255,0.1)" }}
             >
               <ChevronRight size={18} />
             </button>
@@ -138,7 +138,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
                     width: i === index ? 18 : 6,
                     height: 6,
                     borderRadius: 3,
-                    background: i === index ? purple : "rgba(255,255,255,0.5)",
+                    background: i === index ? purple : "rgba(150,150,150,0.4)",
                     border: "none",
                     transition: "width 0.3s",
                   }}
@@ -156,7 +156,6 @@ export default function PublicSite() {
   useFonts();
   const [lang, setLang] = useState("en");
   const [dark, setDark] = useState(true);
-  const [activeSegment, setActiveSegment] = useState(0);
   const [settings, setSettings] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -168,17 +167,23 @@ export default function PublicSite() {
       .then(([s, p]) => {
         setSettings(s.settings);
         setProjects(p.projects || []);
+        // অ্যাডমিন প্যানেল থেকে সেট করা ডিফল্ট থিম এখানে এপ্লাই হবে
+        if (s.settings?.defaultTheme) {
+          setDark(s.settings.defaultTheme === "dark");
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const bg = dark ? "#111111" : "#f4f4f0";
-  const text = dark ? "#f4f4f0" : "#111111";
-  const dim = dark ? "#a3a3a3" : "#6b6b6b";
-  const purple = "#6b21a8";
+  const bg = dark ? "#08090d" : "#f7f7f4";
+  const text = dark ? "#f3f4f6" : "#111827";
+  const dim = dark ? "#9ca3af" : "#4b5563";
+  const purple = "#8b5cf6";
+  const accentGold = "#d4af37";
 
-  const segDef = SEGMENT_DEFS[activeSegment];
+  const segDef = SEGMENT_DEFS[activeSegment ?? 0];
+  const [activeSegment, setActiveSegment] = useState(0);
   const segProjects = projects.filter((p) => p.segment === segDef.id);
 
   const name = settings?.name || "Avash";
@@ -195,44 +200,45 @@ export default function PublicSite() {
         <div
           style={{
             position: "absolute",
-            top: 0,
+            top: "50%",
             left: "50%",
-            transform: "translateX(-50%)",
-            width: "32%",
-            height: "100%",
-            background: `linear-gradient(180deg, ${purple} 0%, transparent 100%)`,
-            opacity: dark ? 0.9 : 0.7,
+            transform: "translate(-50%, -50%)",
+            width: "45vw",
+            height: "75vh",
+            background: `radial-gradient(circle, ${purple}25 0%, rgba(139, 92, 246, 0) 70%)`,
             zIndex: 0,
+            pointerEvents: "none",
           }}
         />
 
         <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-16 py-8 flex flex-col" style={{ minHeight: "100vh" }}>
           <header className="flex justify-between items-start mb-8">
-            <div className="flex items-center gap-2.5 text-lg font-bold">
-              <div style={{ width: 24, height: 24, background: text, clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)" }} />
+            <div className="flex items-center gap-2.5 text-lg font-bold tracking-wider">
+              <div style={{ width: 24, height: 24, background: purple, clipPath: "polygon(50% 0%, 100% 100%, 0% 100%)" }} />
               {name.toUpperCase()}
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setLang(lang === "en" ? "bn" : "en")}
-                className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-2 rounded-full"
-                style={{ background: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)" }}
+                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full border transition hover:opacity-80"
+                style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)" }}
               >
-                <Globe size={12} /> {lang === "en" ? "বাংলা" : "English"}
+                <Globe size={12} style={{ color: purple }} /> {lang === "en" ? "বাংলা" : "English"}
               </button>
               <div
-                className="hidden sm:flex items-center gap-2.5 text-sm px-4 py-2 rounded-full"
-                style={{ background: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)" }}
+                className="hidden sm:flex items-center gap-2.5 text-xs font-medium px-4 py-2 rounded-full border"
+                style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)" }}
               >
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#10b981" }} />
                 {bdTime} • BD
               </div>
               <button
                 onClick={() => setDark(!dark)}
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: purple, color: "#fff", border: "none" }}
+                className="w-9 h-9 rounded-full flex items-center justify-center border transition hover:scale-105"
+                style={{ borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", background: dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", color: text }}
                 aria-label="Toggle theme"
               >
-                {dark ? <Moon size={14} /> : <Sun size={14} />}
+                {dark ? <Moon size={14} style={{ color: purple }} /> : <Sun size={14} style={{ color: accentGold }} />}
               </button>
             </div>
           </header>
@@ -242,8 +248,8 @@ export default function PublicSite() {
               <a
                 key={l}
                 href={i === 0 ? "#work" : i === 1 ? "#work" : "#contact"}
-                className="text-sm font-medium tracking-widest hover:opacity-70 transition"
-                style={{ color: text, textDecoration: "none" }}
+                className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition"
+                style={{ color: dim, textDecoration: "none" }}
               >
                 {l}
               </a>
@@ -252,17 +258,17 @@ export default function PublicSite() {
 
           <main className="flex-1 relative flex items-center justify-between py-16">
             <div className="flex-1 flex flex-col z-10" style={{ gap: "4rem" }}>
-              <div className="text-sm md:text-base font-medium tracking-widest" style={{ color: dim }}>
+              <div className="text-sm md:text-base font-medium tracking-widest leading-relaxed" style={{ color: dim }}>
                 {t.hello}
                 <br />
                 {t.imLabel} <span style={{ fontWeight: 700, color: text }}>{name.toUpperCase()}</span>
               </div>
               <a
                 href="#contact"
-                className="flex items-center justify-center rounded-full transition-all duration-500 hover:scale-105 hover:bg-white hover:text-black group"
-                style={{ width: 110, height: 110, border: `1px solid ${dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}`, textDecoration: "none", color: text, backdropFilter: "blur(8px)" }}
+                className="flex items-center justify-center rounded-full transition-all duration-500 hover:scale-110 group shadow-lg"
+                style={{ width: 110, height: 110, border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, textDecoration: "none", color: text, background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", backdropFilter: "blur(10px)" }}
               >
-                <ArrowUpRight size={36} strokeWidth={1} className="group-hover:rotate-45 transition-transform duration-500" />
+                <ArrowUpRight size={32} strokeWidth={1.5} className="group-hover:rotate-45 transition-transform duration-500" style={{ color: purple }} />
               </a>
             </div>
 
@@ -275,7 +281,7 @@ export default function PublicSite() {
                   textTransform: "uppercase",
                   letterSpacing: 4,
                   color: "transparent",
-                  WebkitTextStroke: `2px ${dark ? "#f5f5dc" : "#1a1a1a"}`,
+                  WebkitTextStroke: `1.5px ${dark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)"}`,
                   whiteSpace: "nowrap",
                   zIndex: 20,
                   marginLeft: "-3%",
@@ -289,14 +295,14 @@ export default function PublicSite() {
                   <img 
                     src={photo} 
                     alt={name} 
-                    className="transition-transform duration-700 hover:scale-105"
+                    className="transition-transform duration-700 hover:scale-[1.02]"
                     style={{ 
-                      width: "min(65vw, 300px)", 
-                      height: "min(85vw, 400px)", 
-                      borderRadius: "150px 150px 16px 16px", 
+                      width: "min(65vw, 290px)", 
+                      height: "min(85vw, 390px)", 
+                      borderRadius: "140px 140px 20px 20px", 
                       objectFit: "cover", 
-                      boxShadow: dark ? "0 30px 60px -15px rgba(107, 33, 168, 0.6)" : "0 30px 60px -15px rgba(0,0,0,0.2)",
-                      border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.05)"}`
+                      boxShadow: "0 25px 50px -12px rgba(139, 92, 246, 0.25)",
+                      border: `1px solid ${dark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)"}`
                     }} 
                   />
                 ) : (
@@ -305,7 +311,7 @@ export default function PublicSite() {
                       height: "100%",
                       width: 180,
                       borderRadius: "90px 90px 0 0",
-                      background: `linear-gradient(180deg, ${purple}55, ${purple}00)`,
+                      background: `linear-gradient(180deg, ${purple}44, ${purple}00)`,
                       border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.2)"}`,
                       display: "flex",
                       alignItems: "center",
@@ -330,10 +336,11 @@ export default function PublicSite() {
                   lineHeight: 0.8,
                   textTransform: "uppercase",
                   letterSpacing: 2,
-                  color: dark ? "#f5f5dc" : "#1a1a1a",
+                  color: text,
                   whiteSpace: "nowrap",
                   zIndex: 20,
                   marginRight: "-3%",
+                  textShadow: dark ? "0 10px 30px rgba(139, 92, 246, 0.3)" : "none",
                 }}
               >
                 VISUALIZED
@@ -348,12 +355,12 @@ export default function PublicSite() {
                     {stats.projectsCount} <span style={{ color: purple, fontSize: "1rem", letterSpacing: 1 }}>{t.projectsLabel}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-end gap-3 pt-1">
-                  {socials.facebook && <a href={socials.facebook} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Facebook size={16} style={{ color: dim }} /></a>}
-                  {socials.linkedin && <a href={socials.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Linkedin size={16} style={{ color: dim }} /></a>}
-                  {socials.instagram && <a href={socials.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Instagram size={16} style={{ color: dim }} /></a>}
-                  {socials.github && <a href={socials.github} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Github size={16} style={{ color: dim }} /></a>}
-                  {socials.dribbble && <a href={socials.dribbble} className="hover:scale-110 transition-transform" target="_blank" rel="noreferrer"><Dribbble size={16} style={{ color: dim }} /></a>}
+                <div className="flex items-center justify-end gap-3.5 pt-1">
+                  {socials.facebook && <a href={socials.facebook} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Facebook size={14} style={{ color: dim }} /></a>}
+                  {socials.linkedin && <a href={socials.linkedin} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Linkedin size={14} style={{ color: dim }} /></a>}
+                  {socials.instagram && <a href={socials.instagram} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Instagram size={14} style={{ color: dim }} /></a>}
+                  {socials.github && <a href={socials.github} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Github size={14} style={{ color: dim }} /></a>}
+                  {socials.dribbble && <a href={socials.dribbble} className="p-2 rounded-full border border-white/10 hover:border-purple-500 hover:scale-110 transition-all" target="_blank" rel="noreferrer"><Dribbble size={14} style={{ color: dim }} /></a>}
                 </div>
               </div>
             </div>
@@ -363,10 +370,10 @@ export default function PublicSite() {
         {marquee && (
           <div
             className="absolute bottom-0 left-0 w-full flex overflow-hidden backdrop-blur-md"
-            style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderTop: `1px solid ${dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, padding: "14px 0", zIndex: 20 }}
+            style={{ background: dark ? "rgba(139, 92, 246, 0.03)" : "rgba(0,0,0,0.02)", borderTop: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, padding: "14px 0", zIndex: 20 }}
           >
-            <div style={{ fontFamily: "'Anton', sans-serif", fontSize: "1.25rem", color: dim, whiteSpace: "nowrap", animation: "avash-marquee 22s linear infinite" }}>
-              {(marquee + " * ").repeat(2)}
+            <div style={{ fontFamily: "'Anton', sans-serif", fontSize: "1.1rem", color: dim, letterSpacing: "1px", whiteSpace: "nowrap", animation: "avash-marquee 25s linear infinite" }}>
+              {(marquee + " ✦ ").repeat(3)}
             </div>
             <style>{`@keyframes avash-marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }`}</style>
           </div>
@@ -379,19 +386,20 @@ export default function PublicSite() {
       )}
 
       {/* ===== WORK ===== */}
-      <section id="work" className="max-w-6xl mx-auto px-6 md:px-16 py-20">
-        <p className="text-xs tracking-[0.25em] mb-8 font-medium" style={{ color: purple }}>{t.whatIDo}</p>
+      <section id="work" className="max-w-6xl mx-auto px-6 md:px-16 py-24">
+        <p className="text-xs tracking-[0.25em] mb-8 font-semibold" style={{ color: purple }}>{t.whatIDo}</p>
 
-        <div className="flex flex-wrap gap-2 mb-10">
+        <div className="flex flex-wrap gap-2.5 mb-12">
           {SEGMENT_DEFS.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setActiveSegment(i)}
-              className="px-4 py-2 rounded-full text-sm border transition-all duration-300"
+              className="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase border transition-all duration-300"
               style={{
-                borderColor: activeSegment === i ? purple : dark ? "#2a2a2a" : "#dcdcdc",
+                borderColor: activeSegment === i ? purple : dark ? "rgba(255,255,255,0.1)" : "#dcdcdc",
                 background: activeSegment === i ? purple : "transparent",
                 color: activeSegment === i ? "#fff" : dim,
+                boxShadow: activeSegment === i ? "0 10px 20px -5px rgba(139, 92, 246, 0.4)" : "none",
               }}
             >
               {s.label[lang]}
@@ -399,7 +407,7 @@ export default function PublicSite() {
           ))}
         </div>
 
-        <h2 className="mb-10" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2.2rem", textTransform: "uppercase", letterSpacing: 1 }}>
+        <h2 className="mb-12" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2.2rem", textTransform: "uppercase", letterSpacing: 1 }}>
           {segDef.label[lang]}
         </h2>
 
@@ -408,24 +416,28 @@ export default function PublicSite() {
         ) : segProjects.length === 0 ? (
           <p className="text-sm" style={{ color: dim }}>{t.empty}</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {segProjects.map((p) => (
-              <div key={p.id} className="group rounded-xl border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg" style={{ borderColor: dark ? "#232323" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)" }}>
+              <div 
+                key={p.id} 
+                className="group rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:border-purple-500/40" 
+                style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.01)" }}
+              >
                 <div
-                  className="rounded-lg h-32 mb-4 flex items-center justify-center text-xs overflow-hidden"
-                  style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#1a1a1a" : "#eaeaea", color: dim }}
+                  className="rounded-xl h-44 mb-5 flex items-center justify-center text-xs overflow-hidden border border-white/5"
+                  style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#14161f" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
                 </div>
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-sm" style={{ fontWeight: 500 }}>{p.title}</h4>
+                  <h4 className="text-sm font-semibold tracking-wide" style={{ color: text }}>{p.title}</h4>
                   {p.pdfUrl && (
-                    <a href={p.pdfUrl} target="_blank" rel="noreferrer" className="hover:scale-110 transition-transform">
-                      <ArrowUpRight size={14} className="mt-0.5 shrink-0" style={{ color: purple }} />
+                    <a href={p.pdfUrl} target="_blank" rel="noreferrer" className="p-1 rounded-full border border-white/10 hover:border-purple-500 transition-colors">
+                      <ArrowUpRight size={14} className="shrink-0" style={{ color: purple }} />
                     </a>
                   )}
                 </div>
-                <p className="text-xs mt-2" style={{ color: dim }}>{p.tags?.join(", ")} {p.tags?.length ? "·" : ""} {p.year}</p>
+                <p className="text-xs mt-2.5 font-medium" style={{ color: dim }}>{p.tags?.join(", ")} {p.tags?.length ? "·" : ""} {p.year}</p>
               </div>
             ))}
           </div>
@@ -433,16 +445,17 @@ export default function PublicSite() {
       </section>
 
       {/* ===== CONTACT ===== */}
-      <footer id="contact" className="max-w-6xl mx-auto px-6 md:px-16 py-20 border-t" style={{ borderColor: dark ? "#232323" : "#e2e2e2" }}>
-        <p className="text-xs tracking-[0.25em] mb-4 font-medium" style={{ color: purple }}>{t.getInTouch}</p>
-        <h3 className="mb-4" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2rem", textTransform: "uppercase" }}>{t.haveProject}</h3>
-        <p className="text-sm max-w-md mb-8" style={{ color: dim }}>{t.contactBody}</p>
-        <div className="flex flex-col gap-2">
-          <a href={`mailto:${settings?.email}`} className="text-sm underline hover:opacity-70 transition-opacity" style={{ color: text }}>{settings?.email}</a>
-          {settings?.phone && <a href={`tel:${settings.phone}`} className="text-sm underline hover:opacity-70 transition-opacity" style={{ color: text }}>{settings.phone}</a>}
+      <footer id="contact" className="max-w-6xl mx-auto px-6 md:px-16 py-24 border-t" style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2" }}>
+        <p className="text-xs tracking-[0.25em] mb-4 font-semibold" style={{ color: purple }}>{t.getInTouch}</p>
+        <h3 className="mb-4" style={{ fontFamily: "'Anton', sans-serif", fontSize: "2.2rem", textTransform: "uppercase", letterSpacing: 1 }}>{t.haveProject}</h3>
+        <p className="text-sm max-w-md mb-8 leading-relaxed" style={{ color: dim }}>{t.contactBody}</p>
+        <div className="flex flex-col gap-2.5">
+          <a href={`mailto:${settings?.email}`} className="text-sm font-medium underline underline-offset-4 hover:text-purple-400 transition-colors" style={{ color: text }}>{settings?.email}</a>
+          {settings?.phone && <a href={`tel:${settings.phone}`} className="text-sm font-medium underline underline-offset-4 hover:text-purple-400 transition-colors" style={{ color: text }}>{settings.phone}</a>}
         </div>
-        <div className="mt-16 pt-6 border-t text-xs" style={{ borderColor: dark ? "#232323" : "#e2e2e2", color: dim }}>
-          © {new Date().getFullYear()} ArchViz by {name}
+        <div className="mt-16 pt-6 border-t text-xs flex justify-between items-center" style={{ borderColor: dark ? "rgba(255,255,255,0.08)" : "#e2e2e2", color: dim }}>
+          <span>© {new Date().getFullYear()} ArchViz by {name}</span>
+          <span className="tracking-widest uppercase text-[10px]">Structural & Architectural Design</span>
         </div>
       </footer>
     </div>
