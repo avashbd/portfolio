@@ -88,7 +88,7 @@ function FeaturedSlideshow({ projects, dark, dim, text, purple, label }) {
             className="absolute inset-0 transition-opacity duration-700"
             style={{
               opacity: i === index ? 1 : 0,
-              backgroundImage: `url(${p.images[0]})`,
+              backgroundImage: `url('${p.images[0]}')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -399,7 +399,7 @@ export default function PublicSite() {
               <div key={p.id} className="group rounded-xl border p-5 transition-colors" style={{ borderColor: dark ? "#232323" : "#e2e2e2", background: dark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
                 <div
                   className="rounded-lg h-32 mb-4 flex items-center justify-center text-xs"
-                  style={{ background: p.images?.[0] ? `url(${p.images[0]}) center/cover` : dark ? "#1a1a1a" : "#eaeaea", color: dim }}
+                  style={{ background: p.images?.[0] ? `url('${p.images[0]}') center/cover` : dark ? "#1a1a1a" : "#eaeaea", color: dim }}
                 >
                   {!p.images?.[0] && "IMAGE"}
                 </div>
