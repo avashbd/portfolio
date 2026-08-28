@@ -175,13 +175,11 @@ export default function PublicSite() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // New States for Advanced Features
   const [selectedProject, setSelectedProject] = useState(null);
   const [scrollY, setScrollY] = useState(0);
   const [isHoveringProject, setIsHoveringProject] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   
-  // Custom Cursor Ref
   const cursorRef = useRef(null);
 
   const t = COPY[lang];
@@ -190,14 +188,11 @@ export default function PublicSite() {
   useEffect(() => {
     setIsMounted(true);
     
-    // Parallax Scroll Listener
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Custom Cursor Pointer Listener
     const handleMouseMove = (e) => {
       if (cursorRef.current) {
-        // Move the cursor smoothly without React state re-renders
         cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
       }
     };
@@ -242,7 +237,6 @@ export default function PublicSite() {
   return (
     <div className={isMounted ? "opacity-100" : "opacity-0"} style={{ background: bg, color: text, fontFamily: "'Inter', sans-serif", minHeight: "100vh", transition: "opacity 0.8s ease" }}>
       
-      {/* Global Styles for Reveal Animations & Hiding Default Cursor */}
       <style>{`
         @media (pointer: fine) {
           body { cursor: none; }
@@ -323,8 +317,8 @@ export default function PublicSite() {
         </div>
       )}
 
-      {/* ===== HERO ===== */}
-      <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
+      {/* ===== HERO (ID="ABOUT" ADDED HERE) ===== */}
+      <div id="about" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
         <div
           className="avash-reveal"
           style={{
@@ -360,8 +354,9 @@ export default function PublicSite() {
           </header>
 
           <div className="hidden md:flex flex-col gap-6 text-right absolute avash-reveal avash-delay-100" style={{ right: "4rem", top: "15%" }}>
+            {/* Nav Href Fixed: i === 0 is now '#about' */}
             {t.nav.map((l, i) => (
-              <a key={l} href={i === 0 ? "#work" : i === 1 ? "#work" : "#contact"} className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition hover:scale-110 origin-right" style={{ color: dim, textDecoration: "none" }}>
+              <a key={l} href={i === 0 ? "#about" : i === 1 ? "#work" : "#contact"} className="text-xs font-semibold tracking-[0.2em] hover:text-purple-400 transition hover:scale-110 origin-right" style={{ color: dim, textDecoration: "none" }}>
                 {l}
               </a>
             ))}
@@ -383,7 +378,6 @@ export default function PublicSite() {
               </a>
             </div>
 
-            {/* Parallax Center Elements */}
             <div className="absolute left-1/2 top-1/2 text-center w-full flex flex-col items-center justify-center pointer-events-none" style={{ transform: "translate(-50%, -50%)" }}>
               <h1
                 className="avash-reveal"
