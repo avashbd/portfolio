@@ -62,17 +62,23 @@ function useBdClock() {
   return time;
 }
 
-// 🚀 NEW: GOOGLE DRIVE IMAGE PROXY CONVERTER
-// এই ফাংশনটি গুগল ড্রাইভের ওয়েব লিংককে ডাইরেক্ট ইমেজ লিংকে রূপান্তর করবে
+// 🚀 ADVANCED GOOGLE DRIVE PROXY CONVERTER
+// এটি গুগলের সিক্রেট থাম্বনেইল API ব্যবহার করে রেস্ট্রিকশন বাইপাস করে
 function getDriveDirectLink(url) {
   if (!url) return "";
   try {
-    if (url.includes('drive.google.com/file/d/')) {
-      const id = url.split('drive.google.com/file/d/')[1].split('/')[0];
-      return `https://drive.google.com/uc?export=view&id=${id}`;
-    } else if (url.includes('drive.google.com/open?id=')) {
-      const id = url.split('drive.google.com/open?id=')[1].split('&')[0];
-      return `https://drive.google.com/uc?export=view&id=${id}`;
+    let id = null;
+    
+    // Extract ID from any kind of Google Drive link
+    if (url.includes('/file/d/')) {
+      id = url.split('/file/d/')[1].split('/')[0];
+    } else if (url.includes('id=')) {
+      id = url.split('id=')[1].split('&')[0];
+    }
+
+    if (id) {
+      // The magic Google Thumbnail API (sz=w1920 ensures Full HD crisp quality)
+      return `https://drive.google.com/thumbnail?id=${id}&sz=w1920`;
     }
   } catch(e) {
     return url;
@@ -86,7 +92,7 @@ function getThumb(url) {
     const videoId = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('youtu.be/')[1]?.split('?')[0];
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
-  // Convert Drive link to direct image link for thumbnails
+  // Convert Drive link to direct image link for thumbnails and CSS Backgrounds
   return getDriveDirectLink(url);
 }
 
@@ -105,7 +111,7 @@ function MediaViewer({ url }) {
     return <video className="w-full aspect-video rounded-xl" controls src={url}></video>;
   }
   
-  // Use the Proxy converter for displaying full images in the popup
+  // Use the Proxy converter for displaying full HD images in the popup
   const finalUrl = getDriveDirectLink(url);
   return <img src={finalUrl} className="w-full h-auto object-contain rounded-xl" alt="Project media" />;
 }
